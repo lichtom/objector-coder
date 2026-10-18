@@ -297,7 +297,7 @@ ipcMain.handle('select-extension-file', async () => {
 
 // IPC: 打开扩展文档（跳转网页）
 ipcMain.handle('open-extension-docs', async () => {
-  shell.openExternal('https://tomlct2015.github.io/Objector-Coder/extension-api');
+  shell.openExternal('https://lichtom.github.io/Objector-Coder/extension-api');
   return true;
 });
 
@@ -523,7 +523,7 @@ ipcMain.handle('open-community-login', async () => {
   });
 
   // 加载社区登录页
-  const loginUrl = 'https://tomlct2015.github.io/Objector-Coder/community/login.html';
+  const loginUrl = 'https://lichtom.github.io/Objector-Coder/community/login.html';
   try {
     await loginWin.loadURL(loginUrl);
   } catch (e) {
