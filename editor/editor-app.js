@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 编辑器窗口入口 - 初始化编辑器模块，绑定 UI 事件
  */
 window.EditorApp = (function () {
@@ -2663,9 +2663,9 @@ window.EditorApp = (function () {
       'load-ext': () => { if (typeof ExtensionDialog !== 'undefined') ExtensionDialog.show(); else loadExtensionDialog(); },
       'ext-docs': () => window.api && window.api.openExtensionDocs(),
       'view-code': () => showAllCodeDialog(),
-      'blocks-guide': () => window.open('https://lichtom.github.io/Objector-Coder/blocks-guide/', '_blank'),
-      'advanced-guide': () => window.open('https://lichtom.github.io/Objector-Coder/how-to-use-advanced-editor/', '_blank'),
-      'minecraft-api': () => window.open('https://lichtom.github.io/Objector-Coder/minecraft-api/', '_blank'),
+      'blocks-guide': () => window.open('https://lichtom.github.io/objector-coder/blocks-guide/', '_blank'),
+      'advanced-guide': () => window.open('https://lichtom.github.io/objector-coder/how-to-use-advanced-editor/', '_blank'),
+      'minecraft-api': () => window.open('https://lichtom.github.io/objector-coder/minecraft-api/', '_blank'),
       'collab-push-progress': () => typeof CollaborationManager !== 'undefined' && CollaborationManager.pushProgress(),
       'collab-push-branch': () => typeof CollaborationManager !== 'undefined' && CollaborationManager.pushToBranch(),
       'collab-view-members': () => typeof CollaborationManager !== 'undefined' && CollaborationManager.viewMembers(),

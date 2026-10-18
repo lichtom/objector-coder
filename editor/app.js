@@ -740,7 +740,7 @@
     // Menu: Open community in browser
     menuOpenCommunity.addEventListener('click', () => {
       userMenu.classList.add('hidden');
-      window.api.openExternal('https://lichtom.github.io/Objector-Coder/community/index.html');
+      window.api.openExternal('https://lichtom.github.io/objector-coder/community/index.html');
     });
 
     // Menu: Logout
@@ -774,7 +774,7 @@
     // Register link: open in browser
     loginRegisterLink.addEventListener('click', (e) => {
       e.preventDefault();
-      window.api.openExternal('https://lichtom.github.io/Objector-Coder/community/login.html');
+      window.api.openExternal('https://lichtom.github.io/objector-coder/community/login.html');
     });
 
     function refreshCommunityUI() {
