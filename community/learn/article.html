@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>文章详情 - Objector 社区</title>
-  <link rel="icon" href="https://tomlct2015.github.io/Objector-Coder/icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="https://tomlct2015.github.io/Objector-Coder/community/shared/community.css" />
+  <link rel="icon" href="https://lichtom.github.io/objector-coder/icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="https://lichtom.github.io/objector-coder/community/shared/community.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="../shared/community-api.js"></script>
@@ -71,7 +71,7 @@
             <span class="badge" style="background:#cba6f7;color:#1a1a2e;">📖 学习</span>
             <h1>${CommunityAPI.escapeHtml(a.title)}</h1>
             <div class="post-meta">
-              <a href="https://tomlct2015.github.io/Objector-Coder/community/profile.html?id=${a.author_id}" class="user-link">
+              <a href="https://lichtom.github.io/objector-coder/community/profile.html?id=${a.author_id}" class="user-link">
                 <img src="${authorAvatar}" class="avatar-sm" onerror="CommunityUI.onImgError(this,'${authorInitial}')" />
                 ${CommunityAPI.escapeHtml(authorName)}
               </a>
