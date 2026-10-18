@@ -1,0 +1,436 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>用户主页 - Objector 社区</title>
+  <link rel="icon" href="../icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="shared/community.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="shared/community-api.js"></script>
+  <script src="shared/community-ui.js"></script>
+</head>
+<body>
+  <div id="nav"></div>
+
+  <div class="page-container">
+    <!-- 用户信息 -->
+    <div id="profile-header" class="profile-header">
+      <div class="loading">加载中...</div>
+    </div>
+
+    <!-- 标签切换 -->
+    <div class="profile-tabs" id="profile-tabs" style="display:none">
+      <button class="profile-tab active" data-tab="projects">作品</button>
+      <button class="profile-tab" data-tab="posts">帖子</button>
+      <button class="profile-tab" data-tab="extensions">扩展</button>
+      <button class="profile-tab" data-tab="favorites">收藏</button>
+    </div>
+
+    <!-- 内容区 -->
+    <div id="tab-content" class="tab-content"></div>
+  </div>
+
+  <footer class="footer">
+    <p>Objector Community · Powered by Supabase</p>
+  </footer>
+
+  <script>
+    CommunityAPI.init();
+    CommunityUI.renderNav('nav');
+
+    const params = new URLSearchParams(location.search);
+    const profileId = params.get('id');
+    let currentTab = 'projects';
+    let currentUser = null;
+    let isOwnProfile = false;
+    let targetUserId = null;
+
+    // 必须等 session 恢复后才能判断是否为本人
+    CommunityAPI.restoreSession().then(() => {
+      CommunityUI.renderNav('nav');
+      currentUser = CommunityAPI.getUser();
+      isOwnProfile = currentUser && (!profileId || profileId === currentUser.id);
+      targetUserId = profileId || (currentUser ? currentUser.id : null);
+
+      if (!targetUserId) {
+        location.href = 'login.html';
+        return;
+      }
+      loadProfile();
+    });
+
+    // 内联编辑简介
+    function openBioEditor(currentBio) {
+      const bioDisplay = document.getElementById('bio-display');
+      if (!bioDisplay) return;
+      bioDisplay.outerHTML = `
+        <div id="bio-editor" style="margin:8px 0;">
+          <textarea id="bio-textarea" maxlength="200" rows="2"
+            style="width:100%;box-sizing:border-box;background:var(--bg-secondary,#181825);color:var(--text,#cdd6f4);border:1px solid var(--accent,#89b4fa);border-radius:6px;padding:8px 10px;font-size:13px;resize:vertical;outline:none;font-family:inherit;">${currentBio}</textarea>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+            <span id="bio-char-count" style="font-size:11px;color:var(--muted,#6c7086);">${currentBio.length}/200</span>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-outline btn-sm" id="bio-cancel">取消</button>
+              <button class="btn btn-primary btn-sm" id="bio-save">保存</button>
+            </div>
+          </div>
+        </div>`;
+      const textarea = document.getElementById('bio-textarea');
+      const charCount = document.getElementById('bio-char-count');
+      textarea.focus();
+      textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+      textarea.addEventListener('input', () => {
+        charCount.textContent = textarea.value.length + '/200';
+      });
+      textarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') { e.preventDefault(); loadProfile(); }
+        if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); document.getElementById('bio-save').click(); }
+      });
+      document.getElementById('bio-cancel').addEventListener('click', () => loadProfile());
+      document.getElementById('bio-save').addEventListener('click', async () => {
+        const btn = document.getElementById('bio-save');
+        btn.disabled = true;
+        btn.textContent = '...';
+        const res = await CommunityAPI.updateProfile({ bio: textarea.value.trim() });
+        if (res.error) {
+          CommunityUI.showToast('更新失败', 'error');
+          btn.disabled = false;
+          btn.textContent = '保存';
+        } else {
+          CommunityUI.showToast('更新成功', 'success');
+          loadProfile();
+        }
+      });
+    }
+
+    // 头像上传处理
+    function handleAvatarChange(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      // 验证文件类型和大小
+      if (!file.type.startsWith('image/')) {
+        CommunityUI.showToast('请选择图片文件', 'error');
+        return;
+      }
+      if (file.size > 2 * 1024 * 1024) {
+        CommunityUI.showToast('图片大小不能超过 2MB', 'error');
+        return;
+      }
+
+      // 显示预览并确认
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        showAvatarPreview(ev.target.result, file);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function showAvatarPreview(dataUrl, file) {
+      // 创建预览弹窗
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.id = 'avatar-modal';
+      modal.innerHTML = `
+        <div class="modal-content avatar-modal">
+          <h3>更换头像</h3>
+          <div class="avatar-preview-wrap">
+            <img src="${dataUrl}" class="avatar-preview-img" alt="预览" />
+          </div>
+          <p style="color:var(--muted,#6c7086);font-size:13px;margin:12px 0;">确认使用这张图片作为头像吗？</p>
+          <div class="modal-actions">
+            <button class="btn btn-outline btn-sm" id="avatar-cancel">取消</button>
+            <button class="btn btn-primary btn-sm" id="avatar-confirm">确认上传</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      document.getElementById('avatar-cancel').addEventListener('click', () => {
+        modal.remove();
+        // 重置 file input
+        const input = document.getElementById('avatar-input');
+        if (input) input.value = '';
+      });
+
+      document.getElementById('avatar-confirm').addEventListener('click', async () => {
+        const btn = document.getElementById('avatar-confirm');
+        btn.disabled = true;
+        btn.textContent = '上传中...';
+        const res = await CommunityAPI.uploadAvatar(file);
+        if (res.error) {
+          CommunityUI.showToast('上传失败: ' + res.error, 'error');
+          btn.disabled = false;
+          btn.textContent = '确认上传';
+        } else {
+          CommunityUI.showToast('头像更新成功', 'success');
+          modal.remove();
+          loadProfile();
+        }
+      });
+
+      // 点击背景关闭
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+          const input = document.getElementById('avatar-input');
+          if (input) input.value = '';
+        }
+      });
+    }
+
+    // 注销账户弹窗
+    function showDeleteAccountModal() {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.id = 'delete-account-modal';
+      modal.innerHTML = `
+        <div class="modal-content delete-modal">
+          <h3 style="color:#f38ba8;">⚠️ 注销账户</h3>
+          <p style="margin:12px 0;color:var(--text,#cdd6f4);">此操作将永久删除你的账户及所有数据，包括：</p>
+          <ul style="color:var(--muted,#6c7086);font-size:13px;margin:0 0 16px 20px;">
+            <li>所有发布的作品</li>
+            <li>所有发布的帖子和评论</li>
+            <li>所有发布的扩展</li>
+            <li>收藏和关注记录</li>
+          </ul>
+          <p style="color:#f38ba8;font-size:13px;margin-bottom:12px;">此操作无法撤销！</p>
+          <label style="display:block;margin-bottom:8px;font-size:13px;">
+            请输入账户密码确认：
+            <input type="password" id="delete-pwd-input" class="modal-input"
+              placeholder="你的密码" autocomplete="current-password" />
+          </label>
+          <div class="modal-actions">
+            <button class="btn btn-outline btn-sm" id="delete-cancel">取消</button>
+            <button class="btn btn-sm" id="delete-confirm" style="background:#f38ba8;color:#1e1e2e;">确认注销</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const pwdInput = document.getElementById('delete-pwd-input');
+      pwdInput.focus();
+      pwdInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('delete-confirm').click();
+      });
+
+      document.getElementById('delete-cancel').addEventListener('click', () => {
+        modal.remove();
+      });
+
+      document.getElementById('delete-confirm').addEventListener('click', async () => {
+        const pwd = pwdInput.value;
+        if (!pwd) {
+          CommunityUI.showToast('请输入密码', 'error');
+          return;
+        }
+        const btn = document.getElementById('delete-confirm');
+        btn.disabled = true;
+        btn.textContent = '处理中...';
+        const res = await CommunityAPI.deleteAccount(pwd);
+        if (res.error) {
+          CommunityUI.showToast('注销失败: ' + res.error, 'error');
+          btn.disabled = false;
+          btn.textContent = '确认注销';
+        } else {
+          CommunityUI.showToast('账户已注销', 'success');
+          setTimeout(() => { location.href = 'index.html'; }, 1500);
+        }
+      });
+
+      // 点击背景关闭
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+      });
+    }
+
+    async function loadProfile() {
+      const res = await CommunityAPI.getProfile(targetUserId);
+      if (res.error || !res.data) {
+        document.getElementById('profile-header').innerHTML = '<div class="empty-state"><p>用户不存在</p></div>';
+        return;
+      }
+
+      renderProfileHeader(res.data);
+      document.getElementById('profile-tabs').style.display = '';
+      loadTabContent();
+    }
+
+    function renderProfileHeader(profile) {
+      const initial = (profile.username || '?')[0].toUpperCase();
+      const avatar = profile.avatar_url || CommunityUI.makeAvatarSvgUrl(initial, 80);
+      const isFollowing = profile.is_following;
+
+      let actionsHtml = '';
+      if (isOwnProfile) {
+        actionsHtml = `
+          <button class="btn btn-outline btn-sm" id="btn-edit-profile">✏️ 编辑简介</button>
+          <button class="btn btn-outline btn-sm" id="btn-logout">退出登录</button>
+          <button class="btn btn-outline btn-sm btn-danger-text" id="btn-delete-account">🗑️ 注销账户</button>
+        `;
+      } else if (currentUser) {
+        actionsHtml = `
+          <button class="btn ${isFollowing ? 'btn-outline' : 'btn-primary'} btn-sm" id="btn-follow">
+            ${isFollowing ? '已关注' : '关注'}
+          </button>
+        `;
+      }
+
+      let bioHtml = '';
+      if (isOwnProfile) {
+        bioHtml = `<div id="bio-display" style="cursor:pointer;" title="点击编辑">
+          ${profile.bio ? `<p class="profile-bio">${profile.bio}</p>` : `<p class="profile-bio" style="color:var(--muted,#6c7086);font-style:italic;">点击添加个人简介...</p>`}
+        </div>`;
+      } else {
+        bioHtml = profile.bio ? `<p class="profile-bio">${profile.bio}</p>` : '';
+      }
+
+      // 自己的头像可以点击修改
+      const avatarHtml = isOwnProfile
+        ? `<div class="profile-avatar-wrap" id="avatar-wrap" title="点击更换头像">
+            <img src="${avatar}" class="profile-avatar" alt="${profile.username}" onerror="this.onerror=null;this.src=CommunityUI.makeAvatarSvgUrl('${initial}',80)" />
+            <div class="profile-avatar-overlay">📷</div>
+           </div>
+           <input type="file" id="avatar-input" accept="image/*" style="display:none" />`
+        : `<img src="${avatar}" class="profile-avatar" alt="${profile.username}" onerror="this.onerror=null;this.src=CommunityUI.makeAvatarSvgUrl('${initial}',80)" />`;
+
+      document.getElementById('profile-header').innerHTML = `
+        <div class="profile-card">
+          ${avatarHtml}
+          <div class="profile-info">
+            <h1>${profile.username}</h1>
+            ${bioHtml}
+            <p class="profile-joined">加入于 ${new Date(profile.created_at).toLocaleDateString()}</p>
+          </div>
+          <div class="profile-actions">${actionsHtml}</div>
+        </div>
+      `;
+
+      // 绑定头像上传
+      if (isOwnProfile) {
+        const avatarWrap = document.getElementById('avatar-wrap');
+        const avatarInput = document.getElementById('avatar-input');
+        if (avatarWrap && avatarInput) {
+          avatarWrap.addEventListener('click', () => avatarInput.click());
+          avatarInput.addEventListener('change', handleAvatarChange);
+        }
+      }
+
+      // 绑定注销账户
+      const btnDeleteAccount = document.getElementById('btn-delete-account');
+      if (btnDeleteAccount) {
+        btnDeleteAccount.addEventListener('click', showDeleteAccountModal);
+      }
+
+      // 绑定事件
+      const btnLogout = document.getElementById('btn-logout');
+      if (btnLogout) {
+        btnLogout.addEventListener('click', async () => {
+          await CommunityAPI.signOut();
+          location.href = 'index.html';
+        });
+      }
+
+      const btnEditProfile = document.getElementById('btn-edit-profile');
+      if (btnEditProfile) {
+        btnEditProfile.addEventListener('click', () => openBioEditor(profile.bio || ''));
+      }
+
+      // 点击简介文字也可以编辑
+      const bioDisplay = document.getElementById('bio-display');
+      if (bioDisplay) {
+        bioDisplay.addEventListener('click', () => openBioEditor(profile.bio || ''));
+      }
+
+      const btnFollow = document.getElementById('btn-follow');
+      if (btnFollow) {
+        btnFollow.addEventListener('click', async () => {
+          if (isFollowing) {
+            await CommunityAPI.unfollowUser(targetUserId);
+          } else {
+            await CommunityAPI.followUser(targetUserId);
+          }
+          loadProfile();
+        });
+      }
+    }
+
+    // 标签切换
+    document.querySelectorAll('.profile-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentTab = tab.dataset.tab;
+        loadTabContent();
+      });
+    });
+
+    async function loadTabContent() {
+      const content = document.getElementById('tab-content');
+      content.innerHTML = '<div class="loading">加载中...</div>';
+
+      if (currentTab === 'projects') {
+        const res = await CommunityAPI.getUserProjects(targetUserId);
+        if (res.data && res.data.length > 0) {
+          content.innerHTML = '<div class="card-grid"></div>';
+          CommunityUI.fillCards(content.querySelector('.card-grid'), res.data.map(p => CommunityUI.renderProjectCard(p)));
+          // 绑定删除按钮
+          content.querySelectorAll('.card-delete-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              const projectId = btn.dataset.projectId;
+              if (!confirm('确定要删除这个作品吗？此操作不可撤销。')) return;
+              const result = await CommunityAPI.deleteProject(projectId);
+              if (result.error) {
+                CommunityUI.showToast('删除失败', 'error');
+              } else {
+                CommunityUI.showToast('已删除', 'success');
+                btn.closest('.card').remove();
+              }
+            });
+          });
+        } else {
+          content.innerHTML = '<div class="empty-state"><p>暂无作品</p></div>';
+        }
+      } else if (currentTab === 'posts') {
+        const res = await CommunityAPI.getUserPosts(targetUserId);
+        if (res.data && res.data.length > 0) {
+          content.innerHTML = '<div class="card-list"></div>';
+          CommunityUI.fillCards(content.querySelector('.card-list'), res.data.map(p => CommunityUI.renderPostCard(p)));
+        } else {
+          content.innerHTML = '<div class="empty-state"><p>暂无帖子</p></div>';
+        }
+      } else if (currentTab === 'extensions') {
+        const res = await CommunityAPI.getUserExtensions(targetUserId);
+        if (res.data && res.data.length > 0) {
+          content.innerHTML = '<div class="card-grid"></div>';
+          CommunityUI.fillCards(content.querySelector('.card-grid'), res.data.map(e => CommunityUI.renderExtensionCard(e)));
+        } else {
+          content.innerHTML = '<div class="empty-state"><p>暂无扩展</p></div>';
+        }
+      } else if (currentTab === 'favorites') {
+        if (!isOwnProfile) {
+          content.innerHTML = '<div class="empty-state"><p>收藏仅自己可见</p></div>';
+          return;
+        }
+        const res = await CommunityAPI.getFavorites();
+        if (res.data && res.data.length > 0) {
+          content.innerHTML = '<div class="card-grid"></div>';
+          CommunityUI.fillCards(content.querySelector('.card-grid'), res.data.map(item => {
+            if (item.target_type === 'project') return CommunityUI.renderProjectCard(item.projects || item);
+            if (item.target_type === 'post') return CommunityUI.renderPostCard(item.posts || item);
+            if (item.target_type === 'extension') return CommunityUI.renderExtensionCard(item.extensions || item);
+            return '';
+          }));
+        } else {
+          content.innerHTML = '<div class="empty-state"><p>暂无收藏</p></div>';
+        }
+      }
+    }
+
+    // loadProfile() 已在 restoreSession().then() 中调用
+  </script>
+</body>
+</html>

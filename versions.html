@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<link rel="icon" href="https://tomlct2015.github.io/Objector-Coder/icon.svg">
+<link rel="apple-touch-icon" href="https://tomlct2015.github.io/Objector-Coder/icon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Objector - 历史版本下载</title>
+<style>
+:root{
+  --bg:#0a0a1a;--bg2:#111128;--surface:#1a1a3e;--surface2:#252550;
+  --text:#e8e8f0;--text2:#a0a0c0;--muted:#6a6a90;
+  --accent:#6c5ce7;--accent2:#a29bfe;--cyan:#00d2d3;--green:#00b894;
+  --pink:#fd79a8;--orange:#fdcb6e;--blue:#74b9ff;
+  --glow:0 0 40px rgba(108,92,231,.3);
+  --radius:12px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;line-height:1.7}
+a{color:var(--accent2);text-decoration:none;transition:color .2s}
+a:hover{color:var(--cyan)}
+
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(108,92,231,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(108,92,231,.04) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+.bg-glow{position:fixed;z-index:0;pointer-events:none;width:600px;height:600px;border-radius:50%;filter:blur(120px);opacity:.15}
+.bg-glow-1{top:-200px;left:-100px;background:var(--accent)}
+.bg-glow-2{bottom:-200px;right:-100px;background:var(--cyan)}
+
+.container{max-width:1000px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 0;background:rgba(10,10,26,.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(108,92,231,.2)}
+nav .container{display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--accent2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:flex;align-items:center;gap:8px}
+.nav-logo img{width:25px;height:25px}
+.nav-links{display:flex;gap:24px;align-items:center}
+.nav-links a{font-size:14px;color:var(--text2);font-weight:500}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{background:linear-gradient(135deg,var(--accent),#8b5cf6);color:#fff!important;padding:8px 20px;border-radius:8px;font-weight:600;font-size:13px;border:none;cursor:pointer;transition:all .3s;box-shadow:0 4px 15px rgba(108,92,231,.4)}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(108,92,231,.5)}
+
+.page-header{text-align:center;padding:120px 0 40px}
+.page-header h1{font-size:clamp(32px,5vw,52px);font-weight:900;margin-bottom:16px}
+.page-header h1 .gradient{background:linear-gradient(135deg,var(--accent2),var(--cyan),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.page-header p{font-size:16px;color:var(--text2);max-width:600px;margin:0 auto}
+
+.version-list{padding:0 0 80px}
+.version-card{background:rgba(255,255,255,.03);border:1px solid rgba(108,92,231,.2);border-radius:16px;padding:24px 28px;margin-bottom:16px;transition:all .2s}
+.version-card:hover{border-color:rgba(108,92,231,.4);background:rgba(255,255,255,.05)}
+.version-card.latest{border-color:var(--accent);background:rgba(108,92,231,.06)}
+.version-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.version-tag{font-size:20px;font-weight:800;color:var(--accent2)}
+.version-date{font-size:12px;color:var(--muted);background:rgba(255,255,255,.05);padding:2px 10px;border-radius:10px}
+.version-badge{font-size:11px;font-weight:700;color:#fff;background:var(--accent);padding:2px 10px;border-radius:10px}
+.version-downloads{display:flex;gap:10px;flex-wrap:wrap}
+.dl-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;transition:all .2s;cursor:pointer;border:none;color:#fff}
+.dl-btn:hover{transform:translateY(-1px);filter:brightness(1.15);color:#fff}
+.dl-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2}
+.dl-btn.exe{background:linear-gradient(135deg,var(--accent),#8b5cf6)}
+.dl-btn.zip{background:linear-gradient(135deg,#2d3436,#636e72)}
+.dl-btn.linux{background:linear-gradient(135deg,#fdcb6e,#e17055)}
+.dl-size{font-size:11px;color:var(--muted);margin-left:2px;font-weight:400}
+
+footer{border-top:1px solid rgba(108,92,231,.15);padding:32px 0;text-align:center}
+.footer-links{display:flex;gap:24px;justify-content:center;margin-bottom:12px}
+.footer-links a{font-size:13px;color:var(--text2)}
+footer p{font-size:12px;color:var(--muted)}
+
+@media(max-width:600px){
+  .version-card{padding:18px 16px}
+  .version-downloads{flex-direction:column}
+  .dl-btn{width:100%;justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow bg-glow-1"></div>
+<div class="bg-glow bg-glow-2"></div>
+
+<nav>
+  <div class="container">
+    <div class="nav-logo"><img src="icon.svg"> Objector</div>
+    <div class="nav-links">
+      <a href="index.html">← <span data-i18n="nav.back">返回主页</span></a>
+      <div style="display:flex;gap:4px;margin-left:8px;">
+        <button class="lang-btn active" onclick="setLang('zh-CN')" style="background:rgba(108,92,231,.2);border:1px solid rgba(108,92,231,.4);color:var(--accent2);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;">中文</button>
+        <button class="lang-btn" onclick="setLang('en')" style="background:rgba(108,92,231,.2);border:1px solid rgba(108,92,231,.4);color:var(--accent2);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;">EN</button>
+      </div>
+      <a href="index.html#download" class="nav-cta" data-i18n="nav.downloadLatest">下载最新版</a>
+    </div>
+  </div>
+</nav>
+
+<section class="page-header">
+  <div class="container">
+    <h1 data-i18n="page.title">历史<span class="gradient">版本下载</span></h1>
+    <p data-i18n="page.desc">所有历史版本均可免费下载。建议使用最新版本以获得最佳体验。</p>
+  </div>
+</section>
+
+<section class="version-list">
+  <div class="container">
+
+    <!-- v1.0.30 -->
+    <div class="version-card latest">
+      <div class="version-header">
+        <span class="version-tag">v1.0.30</span>
+        <span class="version-badge">最新版</span>
+        <span class="version-date">2026-09-27</span>
+      </div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;" data-vi18n="v1030.desc">🧩 扩展管理系统 + 🎴 卡片式扩展弹窗 + 💾 项目自动恢复扩展</p>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector/releases/download/v1.0.30/Objector-Setup-1.0.30.exe" class="dl-btn exe" data-dl="installer">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">104.3 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector/releases/download/v1.0.30/Objector-1.0.30-win.zip" class="dl-btn zip" data-dl="zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">146.0 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.28 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.28</span>
+        <span class="version-date">2026-09-22</span>
+      </div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;" data-vi18n="v1028.desc">🎨 SVG图标系统 + 🪟 面板独立3D渲染 + ⚡ 编辑器舞台离屏化 + 🐛 修复面板2D回退 + 🔊 音频播放修复</p>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector/releases/download/v1.0.28/Objector-Setup-1.0.28.exe" class="dl-btn exe" data-dl="installer">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">待更新</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector/releases/download/v1.0.28/Objector-1.0.28-win.zip" class="dl-btn zip" data-dl="zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">待更新</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector/releases/download/v1.0.28/objector-1.0.28.tar.gz" class="dl-btn linux" data-dl="linux">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Linux 压缩包<span class="dl-size">待更新</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.27 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.27</span>
+        <span class="version-date">2026-09-19</span>
+      </div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;" data-vi18n="v1027.desc">🎭 舞台背景角色 + 🔒 运行时锁定编辑区 + 🐛 修复积木覆盖 bug + ⚡ 执行上下文隔离 + 🪟 面板布局优化</p>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector/releases/download/v1.0.27/Objector-Setup-1.0.27.exe" class="dl-btn exe" data-dl="installer">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">待更新</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector/releases/download/v1.0.27/Objector-1.0.27-win.zip" class="dl-btn zip" data-dl="zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">待更新</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector/releases/download/v1.0.27/objector-1.0.27.tar.gz" class="dl-btn linux" data-dl="linux">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Linux 压缩包<span class="dl-size">待更新</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.26 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.26</span>
+        <span class="version-date">2026-09-18</span>
+      </div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;" data-vi18n="v1026.desc">🪟 4个独立面板窗口 + ⚡ 舞台渲染优化 + 🔊 音频管理 + 🎮 舞台输入捕获 + 🛠️ 工具栏快捷按钮</p>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector/releases/download/v1.0.26/Objector-Setup-1.0.26.exe" class="dl-btn exe" data-dl="installer">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">待更新</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector/releases/download/v1.0.26/Objector-1.0.26-win.zip" class="dl-btn zip" data-dl="zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">待更新</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector/releases/download/v1.0.26/objector-1.0.26.tar.gz" class="dl-btn linux" data-dl="linux">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Linux 压缩包<span class="dl-size">待更新</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.25.gamma -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.25.gamma</span>
+        <span class="version-date">2026-09-12</span>
+      </div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;" data-vi18n="v1025g.desc">🔍 积木转代码 + 📦 项目模板 + 📥 导入Scratch .sb3 + 📊 变量监视 + 🪟 3窗口布局 + 🌐 翻译完善</p>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector/releases/download/v1.0.25.gamma/Objector-Setup-1.0.25.gamma.exe" class="dl-btn exe" data-dl="installer">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">待更新</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector/releases/download/v1.0.25.gamma/Objector-1.0.25.gamma-win.zip" class="dl-btn zip" data-dl="zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">待更新</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector/releases/download/v1.0.25.gamma/objector-1.0.25.gamma.tar.gz" class="dl-btn linux" data-dl="linux">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Linux 压缩包<span class="dl-size">待更新</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.25.beta -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.25.beta</span>
+        <span class="version-date">2026-09-11</span>
+      </div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;" data-vi18n="v1025b.desc">⚙️ 设置面板 + 🎨 6种主题 + 📝 自定义CSS + 👥 协作管理 + 🐛 Bug修复</p>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector/releases/download/v1.0.25.beta/Objector-Setup-1.0.25.beta.exe" class="dl-btn exe" data-dl="installer">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">673 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector/releases/download/v1.0.25.beta/Objector-1.0.25.beta-win.zip" class="dl-btn zip" data-dl="zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">774 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector/releases/download/v1.0.25.beta/objector-1.0.25.beta.tar.gz" class="dl-btn linux" data-dl="linux">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Linux 压缩包<span class="dl-size">515 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.25.alpha -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.25.alpha</span>
+        <span class="version-date">2026-09-08</span>
+      </div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;" data-vi18n="v1025a.desc">⚙️ 设置面板 + 🎨 6种主题 + 📝 自定义CSS + 📌 多标签设置</p>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.25.alpha/Objector-Setup-1.0.25.alpha.exe" class="dl-btn exe" data-dl="installer">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">673 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.25.alpha/Objector-1.0.25.alpha-win.zip" class="dl-btn zip" data-dl="zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">774 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.25.alpha/objector-1.0.25.alpha.tar.gz" class="dl-btn linux" data-dl="linux">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Linux 压缩包<span class="dl-size">755 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.24 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.24</span>
+        <span class="version-date">2026-09-06</span>
+      </div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;" data-vi18n="v1024.desc">命令行窗口 + 角色右键菜单 + 教程系统 + 积木搜索 + 多选积木</p>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.24/Objector-Setup-1.0.24.exe" class="dl-btn exe" data-dl="installer">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">673 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.24/Objector-1.0.24-win.zip" class="dl-btn zip" data-dl="zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">774 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.24/objector-1.0.24.tar.gz" class="dl-btn linux" data-dl="linux">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Linux 压缩包<span class="dl-size">755 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.23 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.23</span>
+        <span class="version-date">2026-09-06</span>
+      </div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;" data-vi18n="v1023.desc">AI 对话助手 + 积木智能连接 + 注册式模型服务 + 安全确认机制</p>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.23/Objector-Setup-1.0.23.exe" class="dl-btn exe" data-dl="installer">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">159 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.23/Objector-1.0.23-win.zip" class="dl-btn zip" data-dl="zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">212 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.23/Objector-1.0.23-linux-x64.tar.gz" class="dl-btn linux" data-dl="linux">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Linux 压缩包<span class="dl-size">565 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.22 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.22</span>
+        <span class="version-date">2026-09-05</span>
+      </div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;" data-vi18n="v1022.desc">AI 辅助编程 + 异步协作 + 撤销重做 + 自动保存 + 性能优化</p>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.22/Objector-Setup-1.0.22.exe" class="dl-btn exe" data-dl="installer">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">159 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.22/Objector-1.0.22-win.zip" class="dl-btn zip" data-dl="zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">212 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.21.alpha -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.21.alpha</span>
+        <span class="version-date">2026-08-31</span>
+      </div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;" data-vi18n="v1021.desc">代码编程模式 (Python/C++/JavaScript) · 流式输出 · stdin 输入 · 右键菜单 · 自动补全</p>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.21.alpha/Objector-Setup-1.0.21-alpha.exe" class="dl-btn exe" data-dl="installer">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">159 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.21.alpha/Objector-1.0.21-alpha-win.zip" class="dl-btn zip" data-dl="zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">212 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.20 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.20</span>
+        <span class="version-date">2026-08-29</span>
+      </div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;" data-vi18n="v1020.desc">Minecraft 模组开发模式 · 34 个 MC 积木 · 代码生成 · 模组包导出</p>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.20/Objector-Setup-1.0.20.exe" class="dl-btn exe" data-dl="installer">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">528 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.20/Objector-1.0.20-win.zip" class="dl-btn zip" data-dl="zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">610 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.19 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.19</span>
+        <span class="version-date">2026-08-18</span>
+      </div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;" data-vi18n="v1019.desc">多场景系统 (2D/3D/UI) · 积木断开端口选择 · JS 编辑器独立弹出 · 3D 渲染修复 · Linux 支持</p>
+      <div class="version-downloads">
+        <a href="https://gitee.com/Li-Chengtang-Tom/objector-coder/releases/download/v1.0.19/Objector-Setup-1.0.19.exe" class="dl-btn exe">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">96.7 MB</span>
+        </a>
+        <a href="https://gitee.com/Li-Chengtang-Tom/objector-coder/releases/download/v1.0.19/Objector-linux-x64-v1.0.19.zip" class="dl-btn linux">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Linux 压缩包<span class="dl-size">96.2 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.19/Objector-win32-x64-v1.0.19.zip" class="dl-btn zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">872.1 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.18 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.18</span>
+        <span class="version-date">2026-08-16</span>
+      </div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;" data-vi18n="v1018.desc">积木右键菜单端口选择 · JS 编辑器弹出支持</p>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.18/Objector.Setup.1.0.18.exe" class="dl-btn exe">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">95.6 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.17 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.17</span>
+        <span class="version-date">2026-08-15</span>
+      </div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;" data-vi18n="v1017.desc">Godot 式高级编辑器 · JS 全功能 API · BUG 修复与增强</p>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.17/Objector.Setup.1.0.17.exe" class="dl-btn exe">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">95.6 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.17/Objector-win32-x64-v1.0.17.zip" class="dl-btn zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">138.4 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.16 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.16</span>
+        <span class="version-date">2026-08-09</span>
+      </div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;" data-vi18n="v1016.desc">3D Plus 扩展 · 社区 3D 预览 · Dropdown 修复</p>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.16/Objector.Setup.1.0.16.exe" class="dl-btn exe">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">95.4 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.16/Objector-win32-x64-1.0.16.zip" class="dl-btn zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">541.8 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.15 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.15</span>
+        <span class="version-date">2026-08-09</span>
+      </div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;" data-vi18n="v1015.desc">3D 模块支持 · 3D 对象创建与相机设置</p>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.15/Objector-1.0.15.Setup.exe" class="dl-btn exe">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">208.4 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.15/Objector-win32-x64-1.0.15.zip" class="dl-btn zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">212.6 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.14 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.14</span>
+        <span class="version-date">2026-08-07</span>
+      </div>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.14/Objector-1.0.14.Setup.exe" class="dl-btn exe">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">208.4 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.14/Objector-win32-x64-1.0.14.zip" class="dl-btn zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">212.6 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.13 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.13</span>
+        <span class="version-date">2026-08-03</span>
+      </div>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.13/Objector-win32-x64-1.0.13.zip" class="dl-btn zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">212.6 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.12 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.12</span>
+        <span class="version-date">2026-08-01</span>
+      </div>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.12/Objector-win32-x64-1.0.12.zip" class="dl-btn zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">212.6 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.9 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.9</span>
+        <span class="version-date">2026-07-27</span>
+      </div>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.9/Objector-1.0.9.Setup.exe" class="dl-btn exe">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">208.2 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.9/Objector-win32-x64-1.0.9.zip" class="dl-btn zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">212.4 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.8 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.8</span>
+        <span class="version-date">2026-07-26</span>
+      </div>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.8/Objector-1.0.8.Setup.exe" class="dl-btn exe">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">208.1 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.8/Objector-win32-x64-1.0.8.zip" class="dl-btn zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">212.3 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.7 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.7</span>
+        <span class="version-date">2026-07-26</span>
+      </div>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.7/Objector-1.0.7.Setup.exe" class="dl-btn exe">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">208 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.7/Objector-win32-x64-1.0.7.zip" class="dl-btn zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">212.1 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.6 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.6</span>
+        <span class="version-date">2026-07-25</span>
+      </div>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.6/Objector-1.0.6.Setup.exe" class="dl-btn exe">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">134.5 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.6/Objector-win32-x64-1.0.6.zip" class="dl-btn zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">138.7 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.4 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.4</span>
+        <span class="version-date">2026-07-24</span>
+      </div>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.4/Objector-1.0.4.Setup.exe" class="dl-btn exe">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">134.5 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.4/Objector-win32-x64-1.0.4.zip" class="dl-btn zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">138.7 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.3 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.3</span>
+        <span class="version-date">2026-07-24</span>
+      </div>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.3/Objector-1.0.3.Setup.exe" class="dl-btn exe">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">134.5 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.3/Objector-win32-x64-1.0.3.zip" class="dl-btn zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">138.6 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.1 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.1</span>
+        <span class="version-date">2026-07-24</span>
+      </div>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.1/Objector-1.0.1.Setup.exe" class="dl-btn exe">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">134 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.1/Objector-win32-x64-1.0.1.zip" class="dl-btn zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">138 MB</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- v1.0.0 -->
+    <div class="version-card">
+      <div class="version-header">
+        <span class="version-tag">v1.0.0</span>
+        <span class="version-date">2026-07-23</span>
+      </div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;" data-vi18n="v1000.desc">🎉 首个发布版本</p>
+      <div class="version-downloads">
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.0/Objector-1.0.0.Setup.exe" class="dl-btn exe">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 安装包<span class="dl-size">134 MB</span>
+        </a>
+        <a href="https://github.com/tomlct2015/Objector-Coder/releases/download/v1.0.0/Objector-win32-x64-1.0.0.zip" class="dl-btn zip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Windows 压缩包<span class="dl-size">138 MB</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-links">
+      <a href="index.html" data-i18n="nav.back">返回主页</a>
+      <a href="index.html#features" data-i18n="nav.features">功能特性</a>
+      <a href="index.html#download" data-i18n="nav.downloadLatest">下载最新版</a>
+    </div>
+    <p data-i18n="ft.copyright">© 2026 Objector. 用积木搭建无限创意。</p>
+  </div>
+</footer>
+
+</body>
+
+<script>
+const vi18n = {
+  'zh-CN': {
+    'nav.back': '返回主页', 'nav.downloadLatest': '下载最新版', 'nav.features': '功能特性',
+    'page.title': '历史<span class="gradient">版本下载</span>',
+    'page.desc': '所有历史版本均可免费下载。建议使用最新版本以获得最佳体验。',
+    'ft.copyright': '© 2026 Objector. 用积木搭建无限创意。',
+    'v1028.desc': 'SVG图标系统 + 面板独立3D渲染 + 编辑器舞台离屏化 + 修复面板2D回退 + 音频播放修复',
+    'v1025b.desc': '设置面板 + 6种主题 + 自定义CSS + 协作管理 + Bug修复',
+        'v1025b.latest': '最新版',
+        'v1025a.desc': '设置面板 + 6种主题 + 自定义CSS + 多标签设置',
+    'v1025a.latest': '最新版',
+    'v1024.desc': '命令行窗口 + 角色右键菜单 + 教程系统 + 积木搜索 + 多选积木',
+    'v1024.latest': '最新版',
+    'v1023.desc': 'AI 对话助手 + 积木智能连接 + 注册式模型服务 + 安全确认机制',
+    'v1023.latest': '最新版',
+    'v1022.desc': 'AI 辅助编程 + 异步协作 + 撤销重做 + 自动保存 + 性能优化',
+    'v1021.desc': '代码编程模式 (Python/C++/JavaScript) · 流式输出 · stdin 输入 · 右键菜单 · 自动补全',
+    'v1020.desc': 'Minecraft 模组开发模式 · 34 个 MC 积木 · 代码生成 · 模组包导出',
+    'v1019.desc': '多场景系统 (2D/3D/UI) · 积木断开端口选择 · JS 编辑器独立弹出 · 3D 渲染修复 · Linux 支持',
+    'v1018.desc': '积木右键菜单端口选择 · JS 编辑器弹出支持',
+    'v1017.desc': 'Godot 式高级编辑器 · JS 全功能 API · BUG 修复与增强',
+    'v1016.desc': '3D Plus 扩展 · 社区 3D 预览 · Dropdown 修复',
+    'v1015.desc': '3D 模块支持 · 3D 对象创建与相机设置',
+    'v1000.desc': '🎉 首个发布版本',
+    'dl.installer': 'Windows 安装包', 'dl.zip': 'Windows 压缩包', 'dl.linux': 'Linux 压缩包',
+  },
+  'en': {
+    'nav.back': 'Back to Home', 'nav.downloadLatest': 'Download Latest', 'nav.features': 'Features',
+    'page.title': 'Version <span class="gradient">History</span>',
+    'page.desc': 'All previous versions are available for free download. We recommend using the latest version for the best experience.',
+    'ft.copyright': '© 2026 Objector. Build unlimited creativity with blocks.',
+    'v1028.desc': 'SVG Icon System + Panel 3D Rendering + Stage Offscreen + Fix Panel 2D Revert + Audio Fix',
+    'v1025b.desc': 'Settings Panel + 6 Themes + Custom CSS + Collaboration + Bug Fixes',
+        'v1025b.latest': 'Latest',
+        'v1025a.desc': 'Settings Panel + 6 Themes + Custom CSS + Multi-Tab Settings',
+    'v1025a.latest': 'Latest',
+    'v1024.desc': 'Command Line Window + Sprite Context Menu + Tutorial System + Block Search + Multi-Select Blocks',
+    'v1024.latest': 'Latest',
+    'v1023.desc': 'AI Chat Assistant + Smart Block Connection + Registered Model Services + Safety Confirmation',
+    'v1023.latest': 'Latest',
+    'v1022.desc': 'AI-Powered Coding + Async Collaboration + Undo/Redo + Auto-Save + Performance Boost',
+    'v1021.desc': 'Code Programming Mode (Python/C++/JavaScript) · Streaming Output · stdin Input · Context Menu · Auto-Complete',
+    'v1020.desc': 'Minecraft Mod Development Mode · 34 MC Blocks · Code Generation · Mod Pack Export',
+    'v1019.desc': 'Multi-Scene System (2D/3D/UI) · Block Disconnect Ports · Standalone JS Editor · 3D Fix · Linux Support',
+    'v1018.desc': 'Block right-click port selection · JS editor popup support',
+    'v1017.desc': 'Godot-style Advanced Editor · Full JS API · Bug Fixes & Enhancements',
+    'v1016.desc': '3D Plus Extension · Community 3D Preview · Dropdown Fix',
+    'v1015.desc': '3D Module Support · 3D Object Creation & Camera Settings',
+    'v1000.desc': '🎉 First Release',
+    'dl.installer': 'Windows Installer', 'dl.zip': 'Windows Portable', 'dl.linux': 'Linux Archive',
+  }
+};
+
+function setLang(lang) {
+  document.documentElement.lang = lang;
+  localStorage.setItem('objector-lang', lang);
+  const t = vi18n[lang];
+  if (!t) return;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key] !== undefined) {
+      if (key === 'page.title') el.innerHTML = t[key];
+      else el.textContent = t[key];
+    }
+  });
+  // Update version descriptions
+  document.querySelectorAll('[data-vi18n]').forEach(el => {
+    const key = el.getAttribute('data-vi18n');
+    if (t[key] !== undefined) el.textContent = t[key];
+  });
+  // Update latest badge
+  const latestBadge = document.querySelector('.version-card.latest .version-badge');
+  if (latestBadge && t['v1021.latest']) latestBadge.textContent = t['v1021.latest'];
+  // Update download button labels
+  document.querySelectorAll('[data-dl]').forEach(el => {
+    const key = 'dl.' + el.getAttribute('data-dl');
+    if (t[key] !== undefined) {
+      const sizeSpan = el.querySelector('.dl-size');
+      const sizeText = sizeSpan ? sizeSpan.outerHTML : '';
+      el.innerHTML = '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> ' + t[key] + ' ' + sizeText;
+    }
+  });
+  // Update lang buttons
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.trim() === (lang === 'en' ? 'EN' : '中文'));
+  });
+}
+
+setLang(localStorage.getItem('objector-lang') || 'zh-CN');
+</script>
+</html>

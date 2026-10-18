@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>Objector AI 助手</title>
+  <style>
+    :root {
+      --bg: #1e1e1e; --bg2: #252526; --surface: #2d2d2d; --hover: #2a2d2e;
+      --text: #cccccc; --text2: #969696; --muted: #6a6a6a;
+      --border: #3c3c3c; --accent: #007acc; --green: #4ec9b0;
+      --red: #f44747; --yellow: #dcdcaa; --mauve: #c586c0;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI','Microsoft YaHei',sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* Titlebar */
+    #titlebar { height: 32px; background: var(--bg2); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); flex-shrink: 0; -webkit-app-region: drag; padding-left: 12px; }
+    #titlebar .title { font-size: 12px; font-weight: 600; color: var(--accent); }
+    #titlebar .controls { display: flex; -webkit-app-region: no-drag; }
+    #titlebar .controls button { width: 32px; height: 32px; border: none; background: transparent; color: var(--text2); font-size: 14px; cursor: pointer; }
+    #titlebar .controls button:hover { background: var(--hover); }
+    #titlebar .controls .close:hover { background: var(--red); color: #fff; }
+
+    /* Toolbar */
+    #toolbar { height: 36px; background: var(--bg2); display: flex; align-items: center; padding: 0 10px; gap: 6px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    #toolbar .tb-btn { padding: 3px 10px; font-size: 11px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); color: var(--text2); cursor: pointer; transition: all .15s; }
+    #toolbar .tb-btn:hover { border-color: var(--accent); color: var(--accent); }
+    #toolbar .tb-btn.active { background: rgba(0,122,204,.15); border-color: var(--accent); color: var(--accent); }
+    #toolbar .spacer { flex: 1; }
+    #toolbar .status { font-size: 11px; color: var(--muted); }
+
+    /* Chat area */
+    #chat-area { flex: 1; overflow-y: auto; padding: 12px 16px; scroll-behavior: smooth; }
+    .msg { margin-bottom: 14px; display: flex; gap: 8px; animation: fadeIn .3s; }
+    .msg-user { flex-direction: row-reverse; }
+    .msg-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+    .msg-user .msg-avatar { background: rgba(0,122,204,.2); }
+    .msg-ai .msg-avatar { background: rgba(78,201,176,.2); }
+    .msg-system .msg-avatar { background: rgba(220,220,170,.2); }
+    .msg-bubble { max-width: 85%; padding: 8px 12px; border-radius: 12px; font-size: 13px; line-height: 1.6; word-break: break-word; }
+    .msg-user .msg-bubble { background: rgba(0,122,204,.12); border-bottom-right-radius: 4px; }
+    .msg-ai .msg-bubble { background: var(--surface); border-bottom-left-radius: 4px; }
+    .msg-system .msg-bubble { background: rgba(220,220,170,.08); font-size: 12px; color: var(--text2); border: 1px solid rgba(220,220,170,.15); }
+    .msg-bubble pre { background: rgba(0,0,0,.3); padding: 6px 10px; border-radius: 6px; margin: 6px 0; font-size: 12px; overflow-x: auto; font-family: 'Cascadia Code','Consolas',monospace; }
+    .msg-bubble code { background: rgba(0,0,0,.2); padding: 1px 4px; border-radius: 3px; font-size: 12px; font-family: 'Cascadia Code','Consolas',monospace; }
+    .msg-bubble .tool-call { background: rgba(197,134,192,.1); border: 1px solid rgba(197,134,192,.2); border-radius: 6px; padding: 6px 10px; margin: 6px 0; font-size: 12px; }
+    .msg-bubble .tool-call .tool-name { color: var(--mauve); font-weight: 600; }
+    .msg-bubble .tool-result { background: rgba(78,201,176,.08); border: 1px solid rgba(78,201,176,.15); border-radius: 6px; padding: 6px 10px; margin: 4px 0; font-size: 12px; }
+    .msg-streaming .msg-bubble::after { content: '▋'; animation: blink 1s infinite; color: var(--accent); }
+
+    /* Thinking indicator */
+    .thinking { display: flex; gap: 4px; padding: 4px 0; }
+    .thinking span { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: bounce .6s infinite alternate; }
+    .thinking span:nth-child(2) { animation-delay: .2s; }
+    .thinking span:nth-child(3) { animation-delay: .4s; }
+
+    /* Input area */
+    #input-area { padding: 10px 16px; border-top: 1px solid var(--border); background: var(--bg2); flex-shrink: 0; }
+    #input-area .quick-bar { display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap; }
+    #input-area .quick-btn { padding: 3px 8px; font-size: 11px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); color: var(--text2); cursor: pointer; transition: all .15s; }
+    #input-area .quick-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,122,204,.1); }
+    #input-row { display: flex; gap: 8px; align-items: flex-end; }
+    #chat-input { flex: 1; min-height: 36px; max-height: 120px; padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 13px; resize: none; outline: none; font-family: inherit; line-height: 1.5; }
+    #chat-input:focus { border-color: var(--accent); }
+    #send-btn { width: 36px; height: 36px; border: none; border-radius: 8px; background: var(--accent); color: var(--bg); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; flex-shrink: 0; }
+    #send-btn:hover { background: #74c7ec; }
+    #send-btn:disabled { opacity: .4; cursor: not-allowed; }
+    #stop-btn { width: 36px; height: 36px; border: none; border-radius: 8px; background: var(--red); color: #fff; font-size: 14px; cursor: pointer; display: none; align-items: center; justify-content: center; flex-shrink: 0; }
+
+    /* Config dialog */
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; z-index: 100; }
+    .overlay.hidden { display: none; }
+    .dialog { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; width: 420px; max-width: 90%; }
+    .dialog h3 { font-size: 14px; color: var(--accent); margin-bottom: 14px; }
+    .dialog label { font-size: 11px; color: var(--muted); display: block; margin-bottom: 4px; }
+    .dialog input, .dialog select { width: 100%; padding: 6px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 13px; margin-bottom: 10px; outline: none; }
+    .dialog input:focus, .dialog select:focus { border-color: var(--accent); }
+    .dialog .btn-row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
+    .dialog .btn-row button { padding: 6px 16px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; cursor: pointer; }
+    .dialog .btn-cancel { background: var(--surface); color: var(--text2); }
+    .dialog .btn-save { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+    /* Confirm dialog */
+    .confirm-dialog { max-width: 380px; }
+    .confirm-dialog .confirm-text { font-size: 13px; line-height: 1.6; margin-bottom: 14px; color: var(--text); }
+    .confirm-dialog .confirm-detail { background: rgba(220,220,170,.08); border: 1px solid rgba(220,220,170,.15); border-radius: 6px; padding: 8px 12px; font-size: 12px; margin-bottom: 14px; color: var(--yellow); }
+    .dialog .btn-danger { background: var(--red); color: #fff; border-color: var(--red); }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-4px); } }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+  </style>
+</head>
+<body>
+  <!-- Titlebar -->
+  <div id="titlebar">
+    <span class="title">🤖 Objector AI 助手</span>
+    <div class="controls">
+      <button class="minimize" onclick="window.api?.windowMinimize()">─</button>
+      <button class="maximize" onclick="window.api?.windowMaximize()">□</button>
+      <button class="close" onclick="window.close()">✕</button>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div id="toolbar">
+    <button class="tb-btn" id="btn-config" title="配置 AI">⚙️ 设置</button>
+    <select id="model-selector" style="padding:3px 6px;font-size:11px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);display:none;">
+      <option value="">未配置模型</option>
+    </select>
+    <button class="tb-btn" id="btn-clear" title="清空对话">🗑️ 清空</button>
+    <button class="tb-btn" id="btn-screenshot" title="截取积木区">📷 截图</button>
+    <button class="tb-btn" id="btn-blocks" title="查看当前积木">📋 积木</button>
+    <span class="spacer"></span>
+    <span class="status" id="status-text">就绪</span>
+  </div>
+
+  <!-- Chat -->
+  <div id="chat-area"></div>
+
+  <!-- Input -->
+  <div id="input-area">
+    <div class="quick-bar">
+      <button class="quick-btn" data-prompt="解释一下当前积木代码">📖 解释代码</button>
+      <button class="quick-btn" data-prompt="当前代码有什么问题？给我调试建议">🐛 调试建议</button>
+      <button class="quick-btn" data-prompt="如何优化当前代码？">⚡ 优化建议</button>
+      <button class="quick-btn" data-prompt="帮我生成一个让角色转圈并说话的积木">✨ 生成积木</button>
+      <button class="quick-btn" data-prompt="查阅积木使用文档并告诉我有哪些高级功能">📚 查文档</button>
+    </div>
+    <div id="input-row">
+      <textarea id="chat-input" rows="1" placeholder="和 AI 助手聊天... (Enter 发送, Shift+Enter 换行)"></textarea>
+      <button id="send-btn" title="发送">➤</button>
+      <button id="stop-btn" title="停止生成">⏹</button>
+    </div>
+  </div>
+
+  <!-- Model Registry Dialog -->
+  <div id="config-overlay" class="overlay hidden">
+    <div class="dialog" style="max-width:480px;">
+      <h3>⚙️ 模型服务管理</h3>
+
+      <div style="margin-bottom:12px;">
+        <label>已注册的模型服务</label>
+        <div id="cfg-registry-list" style="max-height:120px;overflow-y:auto;border:1px solid var(--border);border-radius:4px;padding:4px;background:var(--surface);"></div>
+      </div>
+
+      <div style="border-top:1px solid var(--border);padding-top:12px;">
+        <label style="font-weight:600;">添加新服务</label>
+        <label>提供商预设</label>
+        <select id="cfg-provider">
+          <option value="openai">OpenAI</option>
+          <option value="deepseek">DeepSeek</option>
+          <option value="qwen">阿里通义千问</option>
+          <option value="ollama">Ollama (本地)</option>
+          <option value="custom">自定义</option>
+        </select>
+        <label>显示名称</label>
+        <input id="cfg-name" placeholder="例: GPT-4o" />
+        <label>API Base URL</label>
+        <input id="cfg-url" placeholder="https://api.openai.com/v1" />
+        <label>API Key</label>
+        <input id="cfg-key" type="password" placeholder="sk-..." />
+        <label>模型名称</label>
+        <input id="cfg-model" placeholder="gpt-4o-mini" />
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-cancel" onclick="closeConfig()">关闭</button>
+        <button class="btn-save" onclick="addModelService()">➕ 注册服务</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Dialog -->
+  <div id="confirm-overlay" class="overlay hidden">
+    <div class="dialog confirm-dialog">
+      <h3 id="confirm-title">⚠️ 确认操作</h3>
+      <div class="confirm-text" id="confirm-text"></div>
+      <div class="confirm-detail" id="confirm-detail"></div>
+      <div class="btn-row">
+        <button class="btn-cancel" id="confirm-cancel">取消</button>
+        <button class="btn-danger" id="confirm-ok">确认执行</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const chatArea = document.getElementById('chat-area');
+const chatInput = document.getElementById('chat-input');
+const sendBtn = document.getElementById('send-btn');
+const stopBtn = document.getElementById('stop-btn');
+const statusText = document.getElementById('status-text');
+
+let chatHistory = []; // {role, content}
+let isStreaming = false;
+let currentStreamEl = null;
+let _streamRawText = '';
+let blockCatalog = '';
+let currentBlocks = '';
+let _pendingToolCalls = []; // 收集工具调用，等流结束后统一处理
+
+// ========== Initialization ==========
+window.addEventListener('DOMContentLoaded', () => {
+  // Load model registry
+  loadModelRegistry();
+
+  // Receive block catalog from editor
+  window.api?.onAIBlockCatalog((catalog) => {
+    blockCatalog = catalog;
+  });
+
+  // Receive current blocks from editor
+  window.api?.onAICurrentBlocks((blocks) => {
+    currentBlocks = blocks;
+  });
+
+  // Welcome message
+  addMessage('system', '你好！我是 Objector AI 编程助手。你可以和我聊天、让我生成积木、解释代码、调试问题等。\n\n提示：先用 ⚙️ 设置注册你的 AI 模型服务（支持 OpenAI / DeepSeek / 通义千问 / Ollama）。');
+});
+
+// ========== Chat ==========
+function addMessage(role, content, opts = {}) {
+  const div = document.createElement('div');
+  div.className = 'msg msg-' + role + (opts.streaming ? ' msg-streaming' : '');
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar';
+  avatar.textContent = role === 'user' ? '👤' : (role === 'system' ? '⚠️' : '🤖');
+
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  bubble.innerHTML = formatMarkdown(content);
+
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+  return bubble;
+}
+
+function addThinking() {
+  const div = document.createElement('div');
+  div.className = 'msg msg-ai thinking-msg';
+  div.innerHTML = '<div class="msg-avatar">🤖</div><div class="msg-bubble"><div class="thinking"><span></span><span></span><span></span></div></div>';
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+  return div; // return the WRAPPER div, not the inner bubble
+}
+
+function removeThinking() {
+  // Remove all thinking indicators
+  chatArea.querySelectorAll('.thinking-msg').forEach(el => el.remove());
+}
+
+/** Create a dedicated streaming bubble (separate from thinking) */
+function createStreamBubble() {
+  const div = document.createElement('div');
+  div.className = 'msg msg-ai msg-streaming';
+  div.innerHTML = '<div class="msg-avatar">🤖</div><div class="msg-bubble"></div>';
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+  return div.querySelector('.msg-bubble');
+}
+
+function formatMarkdown(text) {
+  // Simple markdown: code blocks, inline code, bold, line breaks
+  return text
+    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+}
+
+async function sendMessage(text) {
+  if (!text.trim() || isStreaming) return;
+
+  // Add user message
+  addMessage('user', text);
+  chatHistory.push({ role: 'user', content: text });
+
+  // Refresh current blocks before building system prompt (AI needs up-to-date block IDs)
+  currentBlocks = await window.api?.aiGetCurrentBlocks() || '';
+
+  // Build system prompt with full block knowledge
+  const systemPrompt = buildSystemPrompt();
+
+  // Show thinking indicator (separate from streaming bubble)
+  addThinking();
+  setStreaming(true);
+  _streamRawText = '';
+  _pendingToolCalls = [];
+  currentStreamEl = null; // Will be created on first token
+
+  try {
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      ...chatHistory.slice(-20),
+    ];
+
+    const result = await window.api?.aiStreamChat(messages, _currentModelId);
+
+    // After await: remove thinking indicator
+    removeThinking();
+
+    if (result?.error) {
+      if (currentStreamEl) {
+        currentStreamEl.classList.remove('msg-streaming');
+        currentStreamEl.innerHTML = formatMarkdown('❌ 错误: ' + result.error);
+      } else {
+        addMessage('system', '❌ 错误: ' + result.error);
+      }
+      _streamRawText = '';
+      currentStreamEl = null;
+      setStreaming(false);
+      return;
+    }
+
+    // Finalize stream bubble (tokens were accumulated during await via onAIStreamToken)
+    if (currentStreamEl) {
+      currentStreamEl.classList.remove('msg-streaming');
+      const finalText = _streamRawText;
+      if (finalText) {
+        currentStreamEl.innerHTML = formatMarkdown(finalText);
+        chatHistory.push({ role: 'assistant', content: finalText });
+      } else {
+        // No text content (only tool calls), remove empty bubble
+        currentStreamEl.parentElement?.remove();
+      }
+    }
+    currentStreamEl = null;
+    setStreaming(false);
+
+    // Process pending tool calls
+    if (_pendingToolCalls.length > 0) {
+      await _processToolCalls();
+    }
+
+    // Check for >>> commands in the response (needs _streamRawText before reset)
+    await _checkAndExecCmds();
+    _streamRawText = '';
+
+  } catch (e) {
+    removeThinking();
+    if (currentStreamEl) {
+      currentStreamEl.classList.remove('msg-streaming');
+      currentStreamEl.parentElement?.remove();
+    }
+    currentStreamEl = null;
+    addMessage('system', '❌ 连接失败: ' + e.message);
+    _streamRawText = '';
+    setStreaming(false);
+  }
+}
+
+function buildSystemPrompt() {
+  let prompt = `你是 Objector 积木编程助手的 AI。你正在帮助用户使用 Objector 积木编程编辑器。
+
+## 你的能力
+1. **对话**: 回答关于编程、积木、项目的问题
+2. **生成积木**: 根据用户描述生成积木（使用 generate_blocks 工具）
+3. **修改积木**: 删除、移动、修改、连接、断开现有积木（使用 modify_blocks 工具）
+4. **管理角色/造型**: 添加/删除/切换角色，管理造型（使用 manage_sprites 工具）
+5. **运行项目**: 运行当前项目查看效果（使用 run_project 工具）
+6. **保存项目**: 保存当前项目（使用 save_project 工具）
+7. **解释代码**: 分析当前积木代码的功能和逻辑
+8. **调试**: 分析运行输出，找出问题并建议修复
+9. **截图查看**: 可以请求查看当前积木编辑区的截图（使用 screenshot 工具）
+10. **查阅文档**: 可以获取网络内容来回答用户问题（使用 fetch_url 工具）
+
+## 积木数据结构（重要！）
+
+Objector 积木使用 JS 对象存储，每个积木的完整结构：
+\`\`\`javascript
+{
+  id: "blk_abc123",        // 唯一 ID
+  type: "control_repeat",  // 积木类型
+  x: 100, y: 200,          // 画布坐标
+  params: { times: 10 },   // 参数值
+  flowIn: null,            // 上一个积木 ID（null = 链起点）
+  flowOut: "blk_def456",   // 下一个积木 ID（null = 链终点）
+  subBlocks: {},           // C 型槽：{ slotName: 子积木ID }
+  paramConnections: {},    // 参数连接：{ paramName: reporter积木ID }
+}
+\`\`\`
+
+### C 型积木完整示例
+
+假设用户有一个"重复 10 次"积木，内部有"移动 10 步"和"说话"两个积木：
+
+\`\`\`javascript
+// 积木数据存储
+EditorState.blocks = {
+  "blk_001": {
+    id: "blk_001",
+    type: "control_repeat",  // C 型积木
+    x: 100, y: 100,
+    params: { times: 10 },
+    flowIn: null,              // 没有上一个（链起点）
+    flowOut: null,             // 没有下一个（链终点）
+    subBlocks: { body: "blk_002" },  // ★ C 型槽：body 指向第一个子积木
+    paramConnections: {}
+  },
+  "blk_002": {
+    id: "blk_002",
+    type: "move_steps",
+    x: 120, y: 140,           // 位置在 C 型槽内部
+    params: { steps: 10 },
+    flowIn: null,              // 子积木链起点
+    flowOut: "blk_003",        // 连接到下一个子积木
+    subBlocks: {},
+    paramConnections: {}
+  },
+  "blk_003": {
+    id: "blk_003",
+    type: "looks_say",
+    x: 120, y: 180,
+    params: { text: "你好" },
+    flowIn: "blk_002",         // 从上一个积木来
+    flowOut: null,             // 子积木链终点
+    subBlocks: {},
+    paramConnections: {}
+  }
+};
+\`\`\`
+
+### ⚠️ "如果...那么" 和 "如果...那么...否则" 积木（重要！）
+
+这两个积木是 C 型积木，**子积木必须放在 subBlocks 里，绝对不能放在 flowOut 里！**
+
+#### "如果 {条件} 那么" (type: "if_then")
+- shape: c-block
+- subBlocks: **["body"]** — 只有 "body" 这一个槽
+- 条件参数 cond 需要连接一个 boolean 积木（通过 paramConnections）
+
+\`\`\`javascript
+// 正确示例：如果碰到边缘，那么左转 90 度
+EditorState.blocks = {
+  "blk_A": {
+    id: "blk_A",
+    type: "if_then",  // ★ 如果...那么
+    x: 100, y: 100,
+    params: { cond: false },
+    flowIn: null,
+    flowOut: null,
+    subBlocks: { body: "blk_B" },  // ★ body 槽指向第一个子积木
+    paramConnections: { cond: "blk_C" }  // ★ cond 参数连接 boolean 积木
+  },
+  "blk_B": {
+    id: "blk_B",
+    type: "turn_left",
+    x: 120, y: 140,  // 在 C 型槽内部
+    params: { degrees: 90 },
+    flowIn: null,     // ★ 子积木链起点，flowIn 为 null
+    flowOut: null,    // ★ 只有一个子积木，flowOut 为 null
+    subBlocks: {},
+    paramConnections: {}
+  },
+  "blk_C": {
+    id: "blk_C",
+    type: "sensing_touching_edge",  // boolean 积木
+    x: 40, y: 100,  // 在左侧
+    params: {},
+    flowIn: null,
+    flowOut: null,
+    subBlocks: {},
+    paramConnections: {}
+  }
+};
+\`\`\`
+
+#### "如果 {条件} 那么 / 否则" (type: "if_else")
+- shape: c-block
+- subBlocks: **["then", "else"]** — 有两个槽！"then" 放满足条件的子积木，"else" 放不满足条件的子积木
+
+\`\`\`javascript
+// 正确示例：如果 x > 100，那么说"太大"，否则说"还行"
+EditorState.blocks = {
+  "blk_A": {
+    id: "blk_A",
+    type: "if_else",  // ★ 如果...那么...否则
+    x: 100, y: 100,
+    params: { cond: false },
+    flowIn: null,
+    flowOut: null,
+    subBlocks: {
+      then: "blk_B",  // ★ then 槽：满足条件时执行的子积木
+      else: "blk_C"   // ★ else 槽：不满足条件时执行的子积木
+    },
+    paramConnections: { cond: "blk_D" }
+  },
+  "blk_B": {
+    id: "blk_B",
+    type: "looks_say",
+    x: 120, y: 140,
+    params: { text: "太大" },
+    flowIn: null,     // ★ then 子积木链起点
+    flowOut: null,
+    subBlocks: {},
+    paramConnections: {}
+  },
+  "blk_C": {
+    id: "blk_C",
+    type: "looks_say",
+    x: 120, y: 240,
+    params: { text: "还行" },
+    flowIn: null,     // ★ else 子积木链起点
+    flowOut: null,
+    subBlocks: {},
+    paramConnections: {}
+  },
+  "blk_D": {
+    id: "blk_D",
+    type: "op_gt",  // boolean 积木：大于
+    x: 40, y: 100,
+    params: { a: 0, b: 100 },
+    flowIn: null,
+    flowOut: null,
+    subBlocks: {},
+    paramConnections: {}
+  }
+};
+\`\`\`
+
+#### 生成 "如果...那么" 积木时如何用 generate_blocks
+\`\`\`json
+{
+  "blocks": [
+    {"type": "if_then", "x": 100, "y": 100, "connectTo": "blk_001", "connectType": "flowOut"},
+    {"type": "move_steps", "params": {"steps": 10}, "x": 120, "y": 140, "connectTo": "blk_if_id", "connectType": "sub", "subSlot": "body"}
+  ]
+}
+\`\`\`
+注意：第二个积木的 connectTo 应该是第一个 if_then 积木的 ID，connectType 是 "sub"，subSlot 是 "body"。
+
+#### 生成 "如果...那么...否则" 积木时如何用 generate_blocks
+\`\`\`json
+{
+  "blocks": [
+    {"type": "if_else", "x": 100, "y": 100, "connectTo": "blk_001", "connectType": "flowOut"},
+    {"type": "looks_say", "params": {"text": "是"}, "x": 120, "y": 140, "connectTo": "blk_if_id", "connectType": "sub", "subSlot": "then"},
+    {"type": "looks_say", "params": {"text": "否"}, "x": 120, "y": 240, "connectTo": "blk_if_id", "connectType": "sub", "subSlot": "else"}
+  ]
+}
+\`\`\`
+注意：第二个积木用 subSlot="then"，第三个积木用 subSlot="else"。
+
+### 关键规则
+- **flowOut/flowIn**: 顺序执行链，A.flowOut = B.id 表示 A 执行完后执行 B
+- **subBlocks**: C 型槽，\`{ body: "子积木ID" }\` 表示子代码块的入口
+- **paramConnections**: 参数连接，\`{ paramName: "reporter积木ID" }\` 表示将 reporter 的值作为参数
+- 子积木的 flowIn 通常为 null（因为它们是 C 型槽内部的链起点）
+
+### ⚠️ 坐标规则（重要！）
+- **普通积木（通过 flowOut 连接的链）**：**不需要**指定 x/y，系统会自动对齐位置
+- **帽子块（shape=hat，程序入口）**：**需要**指定 x/y，因为它们是独立的起点
+- **C 型槽的子积木**：**需要**指定 x/y，因为它们定位在 C 型槽内部
+- **总结**：如果积木通过 \`connectTo\` + \`connectType=flowOut\` 连接到已有积木，可以省略 x/y
+
+${blockCatalog ? '## 完整积木目录\n' + blockCatalog : ''}
+
+${currentBlocks ? '## 当前项目积木\n' + currentBlocks : '## 当前项目\n当前项目没有积木。'}
+
+## generate_blocks 工具详解
+生成积木时，每个积木可指定：
+- **type**: 积木类型 ID（必填）
+- **params**: 参数对象 {参数名: 值}
+- **connectTo**: 连接到已有积木的 ID
+- **connectType**: flowOut(接在后面) | flowIn(插在前面) | sub(放入C型槽) | param(连到参数槽)
+- **subSlot**: connectType=sub 时指定槽名（body/then/else）
+- **connectParam**: connectType=param 时指定参数名
+- **x, y**: 坐标（**仅当需要独立定位时使用**）
+
+### 示例 1：在已有积木后添加（无需 x/y）
+\`\`\`json
+{"blocks": [{"type": "move_steps", "params": {"steps": 10}, "connectTo": "blk_001", "connectType": "flowOut"}]}
+\`\`\`
+
+### 示例 2：添加独立的帽子块（需要 x/y）
+\`\`\`json
+{"blocks": [{"type": "event_flag", "x": 100, "y": 100}]}
+\`\`\`
+
+### 示例 3：在 C 型槽内添加子积木（需要 x/y）
+\`\`\`json
+{"blocks": [{"type": "looks_say", "params": {"text": "你好"}, "x": 120, "y": 140, "connectTo": "blk_001", "connectType": "sub", "subSlot": "body"}]}
+\`\`\`
+
+### 示例 4：添加一串积木（只有第一个需要 connectTo，后续自动链接）
+\`\`\`json
+{"blocks": [
+  {"type": "move_steps", "params": {"steps": 10}, "connectTo": "blk_001", "connectType": "flowOut"},
+  {"type": "turn_right", "params": {"degrees": 90}},
+  {"type": "looks_say", "params": {"text": "完成"}}
+]}
+\`\`\`
+
+## modify_blocks 工具详解
+action 可选：delete(删除) | move(移动) | update(更新参数) | connect(连接) | disconnect(断开)
+
+## 角色/精灵指令（>>> 格式）
+角色操作通过在回复末尾写 \`>>> 指令\` 来执行。系统自动执行指令并把结果发回给你。
+
+### 可用指令
+- \`>>> sprite add "角色名"\` → 返回索引号
+- \`>>> sprite delete <索引>\` → 删除角色
+- \`>>> sprite rename <索引> "新名"\` → 重命名
+- \`>>> sprite switch <索引>\` → 切换角色
+- \`>>> sprite list\` → 返回所有角色列表
+- \`>>> sprite clone <索引>\` → 克隆角色，返回新索引
+- \`>>> sprite get_id "角色名"\` → 返回索引号
+- \`>>> sprite info <索引>\` → 返回角色详情
+- \`>>> sprite set_pos <索引> <x> <y>\` → 设置位置
+- \`>>> sprite set_dir <索引> <角度>\` → 设置方向
+- \`>>> sprite set_size <索引> <百分比>\` → 设置大小
+- \`>>> sprite set_visible <索引> <0或1>\` → 显示/隐藏
+- \`>>> run\` → 运行项目
+- \`>>> save\` → 保存项目
+- \`>>> blocks_count\` → 返回当前积木数量
+
+### 示例：添加角色
+你的回复：
+好的，为你添加角色“小明”！
+>>> sprite add "小明"
+
+系统会执行并返回结果（如“0”表示索引），然后你可以继续说：“已创建角色小明，索引为0。”
+
+### 示例：重命名角色
+你的回复：
+先查找角色ID：
+>>> sprite get_id "小明"
+
+（假如系统返回“0”）然后你说：
+好的，现在重命名：
+>>> sprite rename 0 "小李"
+
+### 示例：列出角色
+你的回复：
+当前角色列表如下：
+>>> sprite list
+
+### 重要
+- 每次回复只写一个 \`>>>\` 指令
+- 指令写在回复的最后一行
+- 用双引号包裹含空格的名称
+- 你会收到指令的执行结果，然后继续对话
+
+## 重要规则
+- 生成积木时，优先使用 connectTo 连接到已有积木
+- 所有修改操作都会弹出确认对话框，用户确认后才会执行
+- 每次修改后会自动保存项目
+- 回答要简洁、有帮助，用中文
+- 如果不确定用户意图，先询问确认
+`;
+  return prompt;
+}
+
+function setStreaming(v) {
+  isStreaming = v;
+  sendBtn.style.display = v ? 'none' : 'flex';
+  stopBtn.style.display = v ? 'flex' : 'none';
+  chatInput.disabled = v;
+  statusText.textContent = v ? 'AI 正在回复...' : '就绪';
+}
+
+// ========== Stream Events from Main Process ==========
+// Token: append to current stream bubble (create on first token)
+window.api?.onAIStreamToken((token) => {
+  // Create stream bubble on first token (removes thinking indicator)
+  if (!currentStreamEl) {
+    removeThinking();
+    currentStreamEl = createStreamBubble();
+  }
+  _streamRawText += token;
+  currentStreamEl.innerHTML = formatMarkdown(_streamRawText);
+  chatArea.scrollTop = chatArea.scrollHeight;
+});
+
+// Done: finalize (actual push to history done in sendMessage after await)
+window.api?.onAIStreamDone((fullText) => {
+  // Final text is stored by sendMessage after await returns
+});
+
+// Error: show error message
+window.api?.onAIStreamError((error) => {
+  removeThinking();
+  if (currentStreamEl) {
+    currentStreamEl.classList.remove('msg-streaming');
+  }
+  currentStreamEl = null;
+  addMessage('system', '❌ ' + error);
+  _streamRawText = '';
+  setStreaming(false);
+});
+
+// Tool calls: collect them for processing after stream completes
+window.api?.onAIToolCall((tool) => {
+  _pendingToolCalls.push(tool);
+});
+
+// ========== Process Tool Calls (Qoder CN IDE style) ==========
+async function _processToolCalls() {
+  const toolCalls = [..._pendingToolCalls];
+  _pendingToolCalls = [];
+
+  for (const tool of toolCalls) {
+    const { name, args, id } = tool;
+
+    const toolNames = {
+      'generate_blocks': '生成积木',
+      'modify_blocks': '修改积木',
+      'manage_sprites': '管理角色',
+      'run_project': '运行项目',
+      'save_project': '保存项目',
+      'screenshot': '截图',
+      'fetch_url': '访问网页',
+    };
+    const displayName = toolNames[name] || name;
+
+    // Build detail summary
+    let detail = '';
+    if (name === 'generate_blocks') {
+      const count = args.blocks?.length || 0;
+      detail = `添加 ${count} 个积木`;
+      if (args.blocks?.[0]?.connectTo) {
+        detail += ` (连接到 ${args.blocks[0].connectTo})`;
+      }
+    } else if (name === 'modify_blocks') {
+      const actionMap = { delete: '删除', move: '移动', update: '修改', connect: '连接', disconnect: '断开' };
+      detail = `${actionMap[args.action] || args.action} ${args.blockIds?.length || 0} 个积木`;
+    } else if (name === 'manage_sprites') {
+      const actionMap = { add_sprite: '添加角色', delete_sprite: '删除角色', switch_sprite: '切换角色', list_sprites: '列出角色', add_costume: '添加造型', delete_costume: '删除造型', switch_costume: '切换造型' };
+      detail = actionMap[args.action] || args.action;
+      if (args.name) detail += ` (${args.name})`;
+      if (args.spriteIndex !== undefined) detail += ` #${args.spriteIndex}`;
+    } else if (name === 'run_project') {
+      detail = '运行当前项目';
+    } else if (name === 'save_project') {
+      detail = '保存项目';
+    } else if (name === 'fetch_url') {
+      detail = args.url?.slice(0, 60) || '';
+    } else if (name === 'screenshot') {
+      detail = '截取编辑区截图';
+    }
+
+    // Determine if this is a dangerous operation requiring confirmation
+    const isDangerous = (
+      (name === 'generate_blocks') ||
+      (name === 'modify_blocks' && (args.action === 'delete')) ||
+      (name === 'manage_sprites' && (args.action === 'delete_sprite' || args.action === 'delete_costume'))
+    );
+
+    // Create tool card as INDEPENDENT message bubble
+    const toolCardDiv = document.createElement('div');
+    toolCardDiv.className = 'msg msg-ai';
+    toolCardDiv.innerHTML = `
+      <div class="msg-avatar">🔧</div>
+      <div class="msg-bubble tool-card">
+        <div class="tool-card-header" style="cursor:pointer;user-select:none;">
+          <span style="font-weight:600;color:var(--mauve);">${displayName}</span>
+          <span style="color:var(--text2);font-size:11px;margin-left:8px;">${detail}</span>
+          <span class="tool-card-arrow" style="float:right;transition:transform .2s;">▶</span>
+        </div>
+        <div class="tool-card-body" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+          <pre style="font-size:11px;max-height:200px;overflow:auto;background:rgba(0,0,0,.3);padding:6px 10px;border-radius:4px;margin:0;white-space:pre-wrap;word-break:break-all;color:var(--text2);">${JSON.stringify(args, null, 2)}</pre>
+        </div>
+        <div class="tool-card-actions" style="display:${isDangerous ? 'flex' : 'none'};gap:8px;margin-top:8px;">
+          <button class="tool-approve-btn" style="padding:4px 14px;font-size:12px;background:rgba(78,201,176,.2);border:1px solid var(--green);border-radius:4px;color:var(--green);cursor:pointer;">✅ 同意执行</button>
+          <button class="tool-cancel-btn" style="padding:4px 14px;font-size:12px;background:rgba(243,139,168,.1);border:1px solid var(--red);border-radius:4px;color:var(--red);cursor:pointer;">❌ 取消</button>
+        </div>
+        ${!isDangerous ? '<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">⚡ 自动执行</div>' : ''}
+        <div class="tool-card-result" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:12px;"></div>
+      </div>
+    `;
+    chatArea.appendChild(toolCardDiv);
+    chatArea.scrollTop = chatArea.scrollHeight;
+
+    // Toggle body visibility
+    const header = toolCardDiv.querySelector('.tool-card-header');
+    const body = toolCardDiv.querySelector('.tool-card-body');
+    const arrow = toolCardDiv.querySelector('.tool-card-arrow');
+    header.addEventListener('click', () => {
+      const visible = body.style.display !== 'none';
+      body.style.display = visible ? 'none' : 'block';
+      arrow.style.transform = visible ? '' : 'rotate(90deg)';
+    });
+
+    // Wait for user decision (or auto-approve safe operations)
+    const userChoice = isDangerous ? await new Promise((resolve) => {
+      const approveBtn = toolCardDiv.querySelector('.tool-approve-btn');
+      const cancelBtn = toolCardDiv.querySelector('.tool-cancel-btn');
+
+      approveBtn.onclick = () => {
+        approveBtn.disabled = true;
+        cancelBtn.disabled = true;
+        approveBtn.textContent = '⏳ 执行中...';
+        approveBtn.style.opacity = '0.6';
+        cancelBtn.style.opacity = '0.4';
+        resolve(true);
+      };
+      cancelBtn.onclick = () => {
+        approveBtn.disabled = true;
+        cancelBtn.disabled = true;
+        cancelBtn.textContent = '已取消';
+        cancelBtn.style.opacity = '0.6';
+        approveBtn.style.opacity = '0.4';
+        resolve(false);
+      };
+    }) : true; // Auto-approve safe operations
+
+    let result = '';
+    const resultDiv = toolCardDiv.querySelector('.tool-card-result');
+    const approveBtn = toolCardDiv.querySelector('.tool-approve-btn');
+    const actionsDiv = toolCardDiv.querySelector('.tool-card-actions');
+
+    if (userChoice) {
+      // Execute tool
+      if (name === 'screenshot') {
+        result = await window.api?.aiExecuteTool('screenshot', args) || '截图失败';
+        if (result && result.startsWith('data:')) {
+          const img = document.createElement('img');
+          img.src = result;
+          img.style.maxWidth = '100%';
+          img.style.borderRadius = '6px';
+          img.style.margin = '6px 0';
+          resultDiv.style.display = 'block';
+          resultDiv.appendChild(img);
+          result = '[截图已发送]';
+        }
+      } else {
+        result = await window.api?.aiExecuteTool(name, args) || 'OK';
+      }
+
+      if (approveBtn) {
+        approveBtn.textContent = isDangerous ? '✅ 已执行' : '⚡ 已自动执行';
+        approveBtn.style.background = 'rgba(78,201,176,.3)';
+      }
+      resultDiv.style.display = 'block';
+      resultDiv.textContent = typeof result === 'string' ? result.slice(0, 300) : JSON.stringify(result).slice(0, 300);
+
+    } else {
+      const cancelBtn = toolCardDiv.querySelector('.tool-cancel-btn');
+      cancelBtn.textContent = '❌ 已取消';
+      resultDiv.style.display = 'block';
+      resultDiv.style.color = 'var(--red)';
+      resultDiv.textContent = '用户取消了操作';
+      result = '用户取消了操作';
+    }
+
+    chatArea.scrollTop = chatArea.scrollHeight;
+
+    // Record in chat history and trigger continuation
+    const toolSummary = userChoice
+      ? `[工具: ${displayName} - 已执行: ${(typeof result === 'string' ? result : 'OK').slice(0, 150)}]`
+      : `[工具: ${displayName} - 用户取消]`;
+
+    chatHistory.push({ role: 'assistant', content: toolSummary });
+    chatHistory.push({ role: 'user', content: '好的, 继续说' });
+
+    // Trigger AI continuation (new message bubble)
+    await _aiContinue('好的, 继续说');
+  }
+}
+
+// ========== >>> 指令检测与执行 ==========
+/** 从 AI 回复中检测 >>> 指令并执行 */
+async function _checkAndExecCmds() {
+  const text = _streamRawText || '';
+  // 检测最后一行是否是 >>> 指令
+  const lines = text.split('\n');
+  let cmdLine = '';
+  let cmdLineIdx = -1;
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const trimmed = lines[i].trim();
+    if (trimmed.startsWith('>>>')) {
+      cmdLine = trimmed.slice(3).trim();
+      cmdLineIdx = i;
+      break;
+    }
+  }
+  if (!cmdLine) return;
+
+  // 删除确认操作：删除角色需要用户确认
+  const isDelete = /^sprite\s+delete\b/i.test(cmdLine);
+  if (isDelete) {
+    const confirmed = confirm(`AI 要执行删除操作：\n>>> ${cmdLine}\n\n确认执行？`);
+    if (!confirmed) {
+      addMessage('system', `❌ 用户取消了: >>> ${cmdLine}`);
+      chatHistory.push({ role: 'user', content: `用户取消了指令: >>> ${cmdLine}` });
+      await _aiContinue(`用户取消了指令: >>> ${cmdLine}`);
+      return;
+    }
+  }
+
+  // 显示指令卡片
+  const cmdDiv = document.createElement('div');
+  cmdDiv.className = 'msg msg-ai';
+  cmdDiv.innerHTML = `
+    <div class="msg-avatar">⚡</div>
+    <div class="msg-bubble" style="background:rgba(108,92,231,.08);border:1px solid rgba(108,92,231,.2);">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">执行指令</div>
+      <code style="font-size:13px;color:var(--mauve);font-weight:600;">>>> ${cmdLine}</code>
+      <div class="cmd-result" style="margin-top:6px;font-size:12px;color:var(--text2);">⏳ 执行中...</div>
+    </div>
+  `;
+  chatArea.appendChild(cmdDiv);
+  chatArea.scrollTop = chatArea.scrollHeight;
+
+  // 执行指令
+  const result = await window.api?.aiExecCmd(cmdLine) || 'ERROR:执行失败';
+  const resultDiv = cmdDiv.querySelector('.cmd-result');
+  if (resultDiv) {
+    if (result.startsWith('ERROR:')) {
+      resultDiv.style.color = 'var(--red)';
+      resultDiv.textContent = '❌ ' + result.slice(6);
+    } else {
+      resultDiv.style.color = 'var(--green)';
+      resultDiv.textContent = '✅ ' + result;
+    }
+  }
+  chatArea.scrollTop = chatArea.scrollHeight;
+
+  // 把指令结果发回给 AI 继续对话
+  const cmdResultMsg = `指令 >>> ${cmdLine} 的执行结果: ${result}`;
+  chatHistory.push({ role: 'user', content: cmdResultMsg });
+  await _aiContinue(cmdResultMsg);
+}
+
+/** AI 续对话 - 创建新的消息气泡，不显示用户消息 */
+async function _aiContinue(internalText) {
+  // Refresh blocks before continuation
+  currentBlocks = await window.api?.aiGetCurrentBlocks() || '';
+
+  // Show thinking (separate from stream bubble)
+  addThinking();
+  setStreaming(true);
+  _streamRawText = '';
+  _pendingToolCalls = [];
+  currentStreamEl = null; // Will be created on first token
+
+  try {
+    const systemPrompt = buildSystemPrompt();
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      ...chatHistory.slice(-20),
+    ];
+
+    const result = await window.api?.aiStreamChat(messages, _currentModelId);
+
+    // Remove thinking indicator
+    removeThinking();
+
+    // Finalize stream bubble
+    if (currentStreamEl) {
+      currentStreamEl.classList.remove('msg-streaming');
+      const finalText = _streamRawText;
+      if (finalText) {
+        currentStreamEl.innerHTML = formatMarkdown(finalText);
+        chatHistory.push({ role: 'assistant', content: finalText });
+      } else {
+        currentStreamEl.parentElement?.remove();
+      }
+    }
+    currentStreamEl = null;
+    setStreaming(false);
+
+    if (result?.error) {
+      addMessage('system', '❌ ' + result.error);
+      _streamRawText = '';
+      return;
+    }
+
+    // Process any new tool calls from continuation
+    if (_pendingToolCalls.length > 0) {
+      await _processToolCalls();
+    }
+
+    // Check for >>> commands in continuation response
+    await _checkAndExecCmds();
+    _streamRawText = '';
+
+  } catch (e) {
+    removeThinking();
+    if (currentStreamEl) {
+      currentStreamEl.classList.remove('msg-streaming');
+      currentStreamEl.parentElement?.remove();
+    }
+    currentStreamEl = null;
+    addMessage('system', '❌ ' + e.message);
+    _streamRawText = '';
+    setStreaming(false);
+  }
+}
+
+// ========== Confirm Dialog ==========
+function showConfirm(title, text, detail) {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById('confirm-overlay');
+    document.getElementById('confirm-title').textContent = '⚠️ ' + title;
+    document.getElementById('confirm-text').textContent = text;
+    document.getElementById('confirm-detail').textContent = detail || '';
+    document.getElementById('confirm-detail').style.display = detail ? 'block' : 'none';
+    overlay.classList.remove('hidden');
+
+    const okBtn = document.getElementById('confirm-ok');
+    const cancelBtn = document.getElementById('confirm-cancel');
+
+    function cleanup() {
+      overlay.classList.add('hidden');
+      okBtn.onclick = null;
+      cancelBtn.onclick = null;
+    }
+
+    okBtn.onclick = () => { cleanup(); resolve(true); };
+    cancelBtn.onclick = () => { cleanup(); resolve(false); };
+  });
+}
+
+// ========== Model Registry ==========
+let _modelRegistry = []; // [{id, name, provider, baseUrl, apiKey, model}]
+let _currentModelId = null;
+
+const PRESETS = {
+  openai: { baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o-mini' },
+  deepseek: { baseUrl: 'https://api.deepseek.com/v1', model: 'deepseek-chat' },
+  qwen: { baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-turbo' },
+  ollama: { baseUrl: 'http://localhost:11434/v1', model: 'qwen2.5-coder:7b' },
+  custom: { baseUrl: '', model: '' },
+};
+
+// Load registry from storage
+async function loadModelRegistry() {
+  const saved = await window.api?.getAIConfig();
+  if (saved?.registry && Array.isArray(saved.registry)) {
+    _modelRegistry = saved.registry;
+  }
+  if (saved?.currentModelId) {
+    _currentModelId = saved.currentModelId;
+  }
+  refreshRegistryUI();
+  refreshModelSelector();
+}
+
+// Save registry to storage
+async function saveModelRegistry() {
+  await window.api?.saveAIConfig({
+    registry: _modelRegistry,
+    currentModelId: _currentModelId,
+  });
+}
+
+// Add a model service
+function addModelService() {
+  const provider = document.getElementById('cfg-provider').value;
+  const name = document.getElementById('cfg-name').value.trim();
+  const baseUrl = document.getElementById('cfg-url').value.trim();
+  const apiKey = document.getElementById('cfg-key').value.trim();
+  const model = document.getElementById('cfg-model').value.trim();
+
+  if (!name) {
+    alert('请填写显示名称');
+    return;
+  }
+  if (!baseUrl) {
+    alert('请填写 API Base URL');
+    return;
+  }
+  if (!model) {
+    alert('请填写模型名称');
+    return;
+  }
+
+  const id = 'model_' + Date.now().toString(36);
+  _modelRegistry.push({ id, name, provider, baseUrl, apiKey, model });
+  if (!_currentModelId) _currentModelId = id;
+
+  saveModelRegistry();
+  refreshRegistryUI();
+  refreshModelSelector();
+
+  // Clear form
+  document.getElementById('cfg-name').value = '';
+  document.getElementById('cfg-url').value = '';
+  document.getElementById('cfg-key').value = '';
+  document.getElementById('cfg-model').value = '';
+
+  addMessage('system', `✅ 已注册模型服务: ${name}`);
+}
+
+// Delete a model service
+function deleteModelService(id) {
+  if (!confirm('确定删除此模型服务？')) return;
+  _modelRegistry = _modelRegistry.filter(m => m.id !== id);
+  if (_currentModelId === id) {
+    _currentModelId = _modelRegistry[0]?.id || null;
+  }
+  saveModelRegistry();
+  refreshRegistryUI();
+  refreshModelSelector();
+}
+
+// Select current model
+function selectModel(id) {
+  _currentModelId = id;
+  saveModelRegistry();
+  refreshModelSelector();
+  const model = _modelRegistry.find(m => m.id === id);
+  if (model) {
+    addMessage('system', `🔄 已切换到模型: ${model.name}`);
+  }
+}
+
+// Refresh registry list UI
+function refreshRegistryUI() {
+  const list = document.getElementById('cfg-registry-list');
+  if (!list) return;
+
+  if (_modelRegistry.length === 0) {
+    list.innerHTML = '<div style="padding:8px;text-align:center;color:var(--text-muted);font-size:12px;">暂无注册服务</div>';
+    return;
+  }
+
+  list.innerHTML = _modelRegistry.map(m => `
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:4px;${m.id === _currentModelId ? 'background:rgba(78,201,176,.1);' : ''}">
+      <input type="radio" name="current-model" ${m.id === _currentModelId ? 'checked' : ''} onchange="selectModel('${m.id}')" style="cursor:pointer;" />
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:600;color:var(--text);">${m.name}</div>
+        <div style="font-size:10px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.model} @ ${m.baseUrl.slice(0, 40)}</div>
+      </div>
+      <button onclick="deleteModelService('${m.id}')" style="padding:2px 6px;font-size:10px;background:rgba(243,139,168,.1);border:1px solid var(--red);border-radius:3px;color:var(--red);cursor:pointer;">✕</button>
+    </div>
+  `).join('');
+}
+
+// Refresh model selector in toolbar
+function refreshModelSelector() {
+  const selector = document.getElementById('model-selector');
+  if (!selector) return;
+
+  if (_modelRegistry.length === 0) {
+    selector.innerHTML = '<option value="">未配置模型</option>';
+    selector.style.display = 'none';
+    return;
+  }
+
+  selector.style.display = '';
+  selector.innerHTML = _modelRegistry.map(m =>
+    `<option value="${m.id}" ${m.id === _currentModelId ? 'selected' : ''}>${m.name}</option>`
+  ).join('');
+}
+
+// Preset change handler
+document.getElementById('cfg-provider').addEventListener('change', (e) => {
+  const p = PRESETS[e.target.value];
+  if (p) {
+    document.getElementById('cfg-url').value = p.baseUrl;
+    document.getElementById('cfg-model').value = p.model;
+    // Auto-fill name
+    const nameField = document.getElementById('cfg-name');
+    if (!nameField.value) {
+      nameField.value = e.target.options[e.target.selectedIndex].text;
+    }
+  }
+});
+
+// Model selector change handler
+document.getElementById('model-selector').addEventListener('change', (e) => {
+  selectModel(e.target.value);
+});
+
+// ========== Config Dialog ==========
+function openConfig() {
+  document.getElementById('config-overlay').classList.remove('hidden');
+  refreshRegistryUI();
+}
+
+function closeConfig() {
+  document.getElementById('config-overlay').classList.add('hidden');
+}
+
+// ========== Event Bindings ==========
+document.getElementById('btn-config').addEventListener('click', openConfig);
+
+document.getElementById('btn-clear').addEventListener('click', () => {
+  chatArea.innerHTML = '';
+  chatHistory = [];
+  addMessage('system', '对话已清空');
+});
+
+document.getElementById('btn-screenshot').addEventListener('click', async () => {
+  addMessage('user', '📷 请查看当前积木编辑区截图');
+  addThinking();
+  const result = await window.api?.aiExecuteTool('screenshot', {});
+  removeThinking();
+  if (result && result.startsWith('data:')) {
+    const bubble = addMessage('ai', '这是当前积木编辑区的截图：');
+    const img = document.createElement('img');
+    img.src = result;
+    img.style.maxWidth = '100%';
+    img.style.borderRadius = '6px';
+    img.style.margin = '6px 0';
+    bubble.appendChild(img);
+    currentBlocks = await window.api?.aiGetCurrentBlocks() || '';
+  } else {
+    addMessage('system', '截图失败: ' + (result || '未知错误'));
+  }
+});
+
+document.getElementById('btn-blocks').addEventListener('click', async () => {
+  const blocks = await window.api?.aiGetCurrentBlocks();
+  addMessage('user', '📋 查看当前积木');
+  addMessage('ai', blocks || '当前项目没有积木。');
+  currentBlocks = blocks || '';
+});
+
+// Quick buttons
+document.querySelectorAll('.quick-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    sendMessage(btn.dataset.prompt);
+  });
+});
+
+// Send
+sendBtn.addEventListener('click', () => {
+  sendMessage(chatInput.value);
+  chatInput.value = '';
+  chatInput.style.height = 'auto';
+});
+
+stopBtn.addEventListener('click', () => {
+  window.api?.aiStopStream();
+  setStreaming(false);
+  if (currentStreamEl) {
+    currentStreamEl.classList.remove('msg-streaming');
+    currentStreamEl = null;
+  }
+  removeThinking();
+});
+
+chatInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage(chatInput.value);
+    chatInput.value = '';
+    chatInput.style.height = 'auto';
+  }
+});
+
+// Auto-resize textarea
+chatInput.addEventListener('input', () => {
+  chatInput.style.height = 'auto';
+  chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+});
+</script>
+</body>
+</html>

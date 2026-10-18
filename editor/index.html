@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>Objector</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="core/i18n.js"></script>
+  <script src="i18n/zh-CN.js"></script>
+  <script src="i18n/en.js"></script>
+  <!-- Web 版条件加载 API shim（Electron 版由 preload.js 提供） -->
+  <script>if(!window.api){document.write('<script src="web-api-shim.js"><\/script>')}</script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <!-- 社区 API（自动检测路径，兼容 Electron 和 Web 部署） -->
+  <script>
+    (function(){
+      var s=document.createElement('script');
+      s.onerror=function(){var f=document.createElement('script');f.src='../community/shared/community-api.js';document.head.appendChild(f)};
+      s.src='../docs/community/shared/community-api.js';
+      document.head.appendChild(s);
+    })();
+  </script>
+  <style>
+    /* Splash Screen */
+    #splash-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      transition: opacity 0.5s ease-out;
+    }
+    #splash-screen.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .splash-logo-container {
+      perspective: 1000px;
+      margin-bottom: 40px;
+    }
+    .splash-logo {
+      width: 150px;
+      height: 150px;
+      animation: rotate3d 3s ease-in-out infinite;
+      filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.5));
+    }
+    @keyframes rotate3d {
+      0% {
+        transform: rotateY(0deg) rotateX(0deg);
+      }
+      50% {
+        transform: rotateY(180deg) rotateX(10deg);
+      }
+      100% {
+        transform: rotateY(360deg) rotateX(0deg);
+      }
+    }
+    .splash-title {
+      font-size: 48px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #8b5cf6, #00d2d3, #fd79a8);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 3s ease infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    .splash-loading {
+      display: flex;
+      gap: 8px;
+    }
+    .splash-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #8b5cf6;
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+    .splash-dot:nth-child(2) {
+      background: #00d2d3;
+      animation-delay: 0.2s;
+    }
+    .splash-dot:nth-child(3) {
+      background: #fd79a8;
+      animation-delay: 0.4s;
+    }
+    @keyframes pulse {
+      0%, 80%, 100% {
+        transform: scale(0.6);
+        opacity: 0.5;
+      }
+      40% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 启动画面 -->
+  <div id="splash-screen">
+    <div class="splash-logo-container">
+      <img src="../ObjectorLoadImage.svg" class="splash-logo" alt="Objector" />
+    </div>
+    <div class="splash-title">Objector</div>
+    <div class="splash-loading">
+      <div class="splash-dot"></div>
+      <div class="splash-dot"></div>
+      <div class="splash-dot"></div>
+    </div>
+  </div>
+  <!-- 自定义标题栏 -->
+  <header id="titlebar">
+    <div class="titlebar-drag">
+      <img src="../Objector2.png" class="app-logo" alt="" />
+      <span class="app-title">Objector</span>
+    </div>
+    <div class="titlebar-controls">
+      <button id="win-minimize" class="win-btn" data-i18n-title="titlebar.minimize"><img src="../icons/窗口操作图标/最小化.svg" class="tb-icon"></button>
+      <button id="win-maximize" class="win-btn" data-i18n-title="titlebar.maximize"><img src="../icons/窗口操作图标/最大化.svg" class="tb-icon"></button>
+      <button id="win-close" class="win-btn win-close-btn" data-i18n-title="titlebar.close"><img src="../icons/窗口操作图标/关闭.svg" class="tb-icon"></button>
+    </div>
+  </header>
+
+  <!-- 主页 -->
+  <div id="home-screen">
+    <header class="home-header">
+      <h1 class="home-logo">Objector</h1>
+      <div class="home-actions">
+        <a href="https://tomlct2015.github.io/Objector-Coder/blocks-guide/" target="_blank" data-i18n="home.about">关于用法</a>
+        <button id="home-btn-settings" class="tb-btn" title="设置"><img src="../icons/Develop.svg" class="tb-icon"> 设置</button>
+        <button id="home-btn-new" class="tb-btn tb-run" data-i18n="home.newProject"><img src="../icons/Extension.svg" class="tb-icon"> 新建工程</button>
+        <button id="home-btn-open" class="tb-btn" data-i18n="home.openProject">打开项目</button>
+        <button id="home-lang-switch" class="tb-btn" data-i18n="langSwitch" title="Switch Language">EN</button>
+        <div style="position:relative;display:inline-block;">
+          <button id="home-btn-login" class="tb-btn" title="登录社区"><img src="../icons/User.svg" class="tb-icon"> 登录</button>
+          <div id="user-menu" class="user-menu hidden">
+            <button id="menu-open-community" class="user-menu-item"><img src="../icons/Language.svg" class="tb-icon"> 打开社区</button>
+            <button id="menu-logout" class="user-menu-item"><img src="../icons/Run.svg" class="tb-icon"> 退出登录</button>
+            <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
+            <button id="menu-delete-account" class="user-menu-item" style="color:var(--red,#f38ba8);"><img src="../icons/窗口操作图标/关闭.svg" class="tb-icon"> 注销账户</button>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="home-body">
+      <h2 data-i18n="home.pinned"><img src="../icons/窗口操作图标/固定.svg" class="tb-icon"> 固定项目</h2>
+      <div id="pinned-projects"></div>
+      <div id="no-pinned" class="hidden">
+        <p style="color:var(--text-muted);font-size:13px;" data-i18n="home.pinnedHint">点击项目卡片上的图钉按钮固定项目到这里</p>
+      </div>
+      <h2 style="margin-top:24px;" data-i18n="home.recent">最近项目</h2>
+      <div id="recent-projects"></div>
+      <div id="no-projects" class="hidden">
+        <p data-i18n="home.noProjects">还没有项目，点击上方按钮开始创作</p>
+      </div>
+    </main>
+    <footer class="home-footer" style="text-align:center;padding:16px 0 8px;font-size:11px;color:var(--text-muted);opacity:0.6;">
+      Objector v1.0.28
+    </footer>
+  </div>
+
+  <!-- 模式选择弹窗 -->
+  <div id="mode-dialog" class="dialog-overlay hidden">
+    <div class="dialog-box mode-dialog-box">
+      <h2 data-i18n="mode.title">选择创作模式</h2>
+      <p data-i18n="mode.desc">选择你想要的创作方式</p>
+      <div class="mode-cards">
+        <div class="mode-card" data-mode="normal">
+          <div class="mode-icon"><img src="../icons/Run.svg" style="height:36px;"></div>
+          <h3 data-i18n="mode.normal">普通创作</h3>
+          <p data-i18n="mode.normalDesc">使用积木搭建动画、游戏，专注于创意本身</p>
+        </div>
+        <div class="mode-card" data-mode="advanced">
+          <div class="mode-icon"><img src="../icons/Develop.svg" style="height:36px;"></div>
+          <h3 data-i18n="mode.advanced">高级创作</h3>
+          <p data-i18n="mode.advancedDesc">Godot 式专业编辑器，积木与代码双模式</p>
+        </div>
+        <div class="mode-card" data-mode="extension">
+          <div class="mode-icon"><img src="../icons/Extension.svg" style="height:36px;"></div>
+          <h3 data-i18n="mode.extension">扩展创作</h3>
+          <p data-i18n="mode.extensionDesc">创建自定义扩展积木，为 Objector 增加新功能</p>
+        </div>
+        <div class="mode-card" data-mode="data">
+          <div class="mode-icon"><img src="../icons/Develop File.svg" style="height:36px;"></div>
+          <h3>数据分析</h3>
+          <p>类似 Python 的数据分析环境，支持图表、统计、数据处理</p>
+        </div>
+        <div class="mode-card" data-mode="minecraft">
+          <div class="mode-icon"><img src="../我的世界.png" style="width:48px;height:48px;object-fit:contain;"></div>
+          <h3>MC 模组开发</h3>
+          <p>使用积木生成 Minecraft 模组代码，支持基岩版、网易版、Java 版</p>
+        </div>
+        <div class="mode-card" data-mode="code">
+          <div class="mode-icon"><img src="../icons/Develop.svg" style="height:36px;"></div>
+          <h3>代码编程</h3>
+          <p>使用 Python、C++、JavaScript 等语言进行代码编程</p>
+        </div>
+      </div>
+      <button id="mode-cancel" class="tb-btn" data-i18n="mode.cancel">取消</button>
+    </div>
+  </div>
+
+  <!-- 编程语言选择弹窗 -->
+  <div id="language-dialog" class="dialog-overlay hidden">
+    <div class="dialog-box mode-dialog-box">
+      <h2>选择编程语言</h2>
+      <p>选择你想要使用的编程语言</p>
+      <div class="mode-cards">
+        <div class="mode-card" data-lang="python">
+          <div class="mode-icon"><img src="../icons/Language.svg" style="height:36px;"></div>
+          <h3>Python</h3>
+          <p>简洁易读，适合初学者和数据科学</p>
+        </div>
+        <div class="mode-card" data-lang="cpp">
+          <div class="mode-icon"><img src="../icons/Develop.svg" style="height:36px;"></div>
+          <h3>C++</h3>
+          <p>高性能，适合系统编程和游戏开发</p>
+        </div>
+        <div class="mode-card" data-lang="javascript">
+          <div class="mode-icon"><img src="../icons/Language.svg" style="height:36px;"></div>
+          <h3>JavaScript</h3>
+          <p>Web 开发首选，前后端通用</p>
+        </div>
+      </div>
+      <button id="language-cancel" class="tb-btn">返回</button>
+    </div>
+  </div>
+
+  <!-- 渲染模式子选择弹窗（点击普通创作后显示） -->
+  <div id="render-mode-dialog" class="dialog-overlay hidden">
+    <div class="dialog-box mode-dialog-box">
+      <h2>选择渲染模式</h2>
+      <p>选择你想要的画面渲染方式</p>
+      <div class="mode-cards">
+        <div class="mode-card" data-render="2d">
+          <div class="mode-icon"><img src="../icons/Document.svg" style="height:36px;"></div>
+          <h3>2D 模式</h3>
+          <p>经典 2D 平面渲染，适合大多数创作</p>
+        </div>
+        <div class="mode-card" data-render="3d">
+          <div class="mode-icon"><img src="../icons/Extension.svg" style="height:36px;"></div>
+          <h3>3D 模式</h3>
+          <p>3D 立体渲染，增加空间感和深度</p>
+        </div>
+      </div>
+      <button id="render-mode-cancel" class="tb-btn">取消</button>
+    </div>
+  </div>
+
+  <!-- 新建项目弹窗 -->
+  <div id="new-project-dialog" class="dialog-overlay hidden">
+    <div class="dialog-box" style="max-width:480px;width:90%;">
+      <h2 data-i18n="home.newProject">+ 新建工程</h2>
+      <div style="display:flex;flex-direction:column;gap:14px;margin:16px 0;">
+        <!-- 项目名称 -->
+        <div>
+          <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;" data-i18n="newProject.name">项目名称</label>
+          <input id="np-name" type="text" class="settings-input" style="width:100%;padding:8px 10px;font-size:13px;" placeholder="我的作品" />
+        </div>
+        <!-- 项目存放位置 -->
+        <div>
+          <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;" data-i18n="newProject.location">项目存放位置</label>
+          <div style="display:flex;gap:6px;">
+            <input id="np-location" type="text" class="settings-input" style="flex:1;padding:8px 10px;font-size:12px;" placeholder="点击右侧按钮选择文件夹..." readonly />
+            <button id="np-browse" class="tb-btn" style="white-space:nowrap;"><img src="../icons/Develop File.svg" class="tb-icon"> 浏览</button>
+          </div>
+        </div>
+        <!-- 项目类型 -->
+        <div>
+          <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:8px;" data-i18n="newProject.type">项目类型</label>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+            <div class="np-type-card active" data-mode="normal">
+              <div style="font-size:20px;"><img src="../icons/Run.svg" style="height:24px;"></div>
+              <div style="font-size:11px;font-weight:600;margin-top:4px;">普通创作</div>
+              <div class="np-sub-options" style="margin-top:8px;text-align:left;">
+                <label style="font-size:10px;display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="np-render" value="2d" checked style="width:12px;height:12px;"/> 2D 模式</label>
+                <label style="font-size:10px;display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="np-render" value="3d" style="width:12px;height:12px;"/> 3D 模式</label>
+              </div>
+            </div>
+            <div class="np-type-card" data-mode="advanced">
+              <div style="font-size:20px;"><img src="../icons/Develop.svg" style="height:24px;"></div>
+              <div style="font-size:11px;font-weight:600;margin-top:4px;">高级创作</div>
+            </div>
+            <div class="np-type-card" data-mode="extension">
+              <div style="font-size:20px;"><img src="../icons/Extension.svg" style="height:24px;"></div>
+              <div style="font-size:11px;font-weight:600;margin-top:4px;">扩展创作</div>
+            </div>
+            <div class="np-type-card" data-mode="data">
+              <div style="font-size:20px;"><img src="../icons/Develop File.svg" style="height:24px;"></div>
+              <div style="font-size:11px;font-weight:600;margin-top:4px;">数据分析</div>
+            </div>
+            <div class="np-type-card" data-mode="minecraft">
+              <div style="font-size:20px;"><img src="../我的世界.png" style="width:24px;height:24px;object-fit:contain;"></div>
+              <div style="font-size:11px;font-weight:600;margin-top:4px;">MC 模组</div>
+            </div>
+            <div class="np-type-card" data-mode="code">
+              <div style="font-size:20px;"><img src="../icons/Develop.svg" style="height:24px;"></div>
+              <div style="font-size:11px;font-weight:600;margin-top:4px;">代码编程</div>
+              <div class="np-sub-options" style="margin-top:8px;text-align:left;">
+                <label style="font-size:10px;display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="np-lang" value="python" checked style="width:12px;height:12px;"/> Python</label>
+                <label style="font-size:10px;display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="np-lang" value="cpp" style="width:12px;height:12px;"/> C++</label>
+                <label style="font-size:10px;display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="np-lang" value="javascript" style="width:12px;height:12px;"/> JavaScript</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button id="np-cancel" class="tb-btn" data-i18n="dialog.cancel">取消</button>
+        <button id="np-create" class="tb-btn tb-run" data-i18n="newProject.create">创建项目</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 社区登录对话框 -->
+  <div id="community-login-dialog" class="custom-prompt-overlay hidden">
+    <div class="custom-prompt-box" style="max-width:380px;">
+      <div class="custom-prompt-title" data-i18n="login.title"><img src="../icons/User.svg" class="tb-icon"> 社区登录</div>
+      <!-- 登录方式切换 tab -->
+      <div style="display:flex;gap:0;margin-bottom:12px;border-bottom:1px solid var(--border);">
+        <button id="login-tab-password" class="login-tab active" style="flex:1;padding:8px;background:none;border:none;border-bottom:2px solid var(--accent);color:var(--text-primary);cursor:pointer;font-size:13px;" data-i18n="login.tabPassword">密码登录</button>
+        <button id="login-tab-otp" class="login-tab" style="flex:1;padding:8px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-muted);cursor:pointer;font-size:13px;" data-i18n="login.tabOtp">验证码登录</button>
+      </div>
+      <!-- 密码登录区 -->
+      <div id="login-section-password">
+        <div style="margin-bottom:12px;">
+          <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;" data-i18n="login.email">邮箱</label>
+          <input id="login-email" type="email" class="custom-prompt-input" placeholder="email@example.com" autocomplete="email" />
+        </div>
+        <div style="margin-bottom:12px;">
+          <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;" data-i18n="login.password">密码</label>
+          <input id="login-password" type="password" class="custom-prompt-input" placeholder="********" autocomplete="current-password" />
+        </div>
+      </div>
+      <!-- OTP 验证码登录区 -->
+      <div id="login-section-otp" style="display:none;">
+        <div style="margin-bottom:12px;">
+          <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px;" data-i18n="login.email">邮箱</label>
+          <input id="login-otp-email" type="email" class="custom-prompt-input" placeholder="email@example.com" autocomplete="email" />
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <input id="login-otp-code" type="text" class="custom-prompt-input" placeholder="输入6位验证码" maxlength="6" style="flex:1;" autocomplete="one-time-code" />
+          <button id="login-otp-send" class="tb-btn" style="white-space:nowrap;min-width:90px;" data-i18n="login.sendOtp">发送验证码</button>
+        </div>
+      </div>
+      <div id="login-result" style="font-size:12px;min-height:20px;margin-bottom:8px;"></div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;text-align:center;">
+        还没有账号？<a id="login-register-link" href="#" style="color:var(--accent);text-decoration:none;">点击这里创建账号</a>
+      </div>
+      <div class="custom-prompt-actions">
+        <button id="login-cancel" class="tb-btn" data-i18n="dialog.cancel">取消</button>
+        <button id="login-submit" class="tb-btn tb-run" data-i18n="login.submit">登录</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 重命名弹窗 -->
+  <div id="rename-dialog" class="custom-prompt-overlay hidden">
+    <div class="custom-prompt-box" style="max-width:360px;">
+      <div class="custom-prompt-title" id="rename-title"><img src="../icons/Document.svg" class="tb-icon"> 重命名</div>
+      <input id="rename-input" type="text" class="custom-prompt-input" placeholder="输入新名称" />
+      <div class="custom-prompt-actions">
+        <button id="rename-cancel" class="tb-btn">取消</button>
+        <button id="rename-ok" class="tb-btn tb-run">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 项目卡片右键菜单 -->
+  <div id="project-context-menu" class="ctx-menu hidden">
+    <div class="ctx-item" data-action="open"><img src="../icons/Document.svg" class="tb-icon"> 打开项目</div>
+    <div class="ctx-item" data-action="rename"><img src="../icons/Develop.svg" class="tb-icon"> 重命名</div>
+    <div class="ctx-item" data-action="pin" id="ctx-pin-item"><img src="../icons/窗口操作图标/固定.svg" class="tb-icon"> 固定</div>
+    <div class="ctx-divider"></div>
+    <div class="ctx-item ctx-danger" data-action="delete"><img src="../icons/窗口操作图标/关闭.svg" class="tb-icon"> 删除</div>
+  </div>
+
+  <!-- 设置对话框 -->
+  <div id="settings-dialog" class="dialog-overlay hidden">
+    <div class="dialog-box settings-dialog-box">
+      <div class="settings-header">
+        <h2><img src="../icons/Develop.svg" class="tb-icon" style="height:20px;"> 设置</h2>
+        <button id="settings-close" class="settings-close-btn"><img src="../icons/窗口操作图标/关闭.svg" class="tb-icon" style="height:14px;margin:0;"></button>
+      </div>
+      <div class="settings-tabs">
+        <button class="settings-tab active" data-tab="appearance"><img src="../icons/Develop.svg" class="tb-icon" style="height:13px;"> 外观</button>
+        <button class="settings-tab" data-tab="editor"><img src="../icons/Document.svg" class="tb-icon" style="height:13px;"> 编辑器</button>
+        <button class="settings-tab" data-tab="ai"><img src="../icons/Extension.svg" class="tb-icon" style="height:13px;"> AI</button>
+        <button class="settings-tab" data-tab="about"><img src="../icons/User.svg" class="tb-icon" style="height:13px;"> 关于</button>
+      </div>
+      <div class="settings-content">
+        <!-- 外观设置 -->
+        <div class="settings-panel active" data-panel="appearance">
+          <h3>主题样式</h3>
+          <div class="theme-grid">
+            <div class="theme-card" data-theme="dark">
+              <div class="theme-preview" style="background:#1e1e1e;"><div style="background:#007acc;height:3px;"></div></div>
+              <span>深色模式</span>
+            </div>
+            <div class="theme-card" data-theme="light">
+              <div class="theme-preview" style="background:#ffffff;"><div style="background:#007acc;height:3px;"></div></div>
+              <span>浅色模式</span>
+            </div>
+            <div class="theme-card" data-theme="solarized">
+              <div class="theme-preview" style="background:#002b36;"><div style="background:#b58900;height:3px;"></div></div>
+              <span>Solarized</span>
+            </div>
+            <div class="theme-card" data-theme="nord">
+              <div class="theme-preview" style="background:#2e3440;"><div style="background:#88c0d0;height:3px;"></div></div>
+              <span>Nord</span>
+            </div>
+            <div class="theme-card" data-theme="dracula">
+              <div class="theme-preview" style="background:#282a36;"><div style="background:#bd93f9;height:3px;"></div></div>
+              <span>Dracula</span>
+            </div>
+          </div>
+          <h3 style="margin-top:24px;">自定义 CSS (如果你不知道你在干什么, 不要动这个)</h3>
+          <textarea id="custom-css" class="settings-textarea" placeholder="输入自定义 CSS 样式..."></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button id="apply-css" class="tb-btn">应用 CSS</button>
+            <button id="reset-css" class="tb-btn">重置</button>
+          </div>
+        </div>
+        <!-- 编辑器设置 -->
+        <div class="settings-panel" data-panel="editor">
+          <h3>编辑器偏好</h3>
+          <div class="setting-item">
+            <label>字体大小</label>
+            <input id="font-size" type="number" min="10" max="24" value="13" class="settings-input" />
+          </div>
+          <div class="setting-item">
+            <label>自动保存间隔（秒）</label>
+            <input id="autosave-interval" type="number" min="10" max="300" value="30" class="settings-input" />
+          </div>
+          <div class="setting-item">
+            <label>
+              <input id="enable-sound" type="checkbox" checked />
+              启用音效
+            </label>
+          </div>
+        </div>
+        <!-- AI 设置 -->
+        <div class="settings-panel" data-panel="ai">
+          <h3>AI 助手</h3>
+          <p style="color:var(--text-muted);font-size:12px;">AI 设置可在编辑器中点击 AI 按钮进行配置</p>
+          <div class="setting-item">
+            <label>
+              <input id="ai-auto-exec" type="checkbox" />
+              自动执行安全指令
+            </label>
+          </div>
+        </div>
+        <!-- 关于 -->
+        <div class="settings-panel" data-panel="about">
+          <h3>关于 Objector</h3>
+          <p style="color:var(--text-secondary);font-size:13px;line-height:1.6;">
+            <strong>Objector</strong> 是一款强大的图形化积木编程编辑器，<br/>
+            让零基础用户也能创作动画、游戏和交互式程序。
+          </p>
+          <p style="color:var(--text-muted);font-size:12px;margin-top:16px;">
+            版本: v1.0.27<br/>
+            许可证: MIT License<br/>
+            <a href="https://github.com/tomlct2015/Objector-Coder" target="_blank" style="color:var(--accent);">GitHub 仓库</a>
+          </p>
+        </div>
+      </div>
+      <div class="settings-footer">
+        <button id="settings-save" class="tb-btn tb-run">保存设置</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // 页面加载完成后隐藏启动画面
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        const splash = document.getElementById('splash-screen');
+        if (splash) {
+          splash.classList.add('fade-out');
+          setTimeout(function() {
+            splash.remove();
+          }, 500);
+        }
+      }, 800); // 最小显示 800ms，确保用户看到动画
+    });
+  </script>
+</body>
+</html>

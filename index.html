@@ -1,0 +1,962 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<!-- 标准 Favicon -->
+<link rel="icon" href="https://tomlct2015.github.io/Objector-Coder/icon.svg">
+<!-- Apple 设备（iOS/macOS） -->
+<link rel="apple-touch-icon" href="https://tomlct2015.github.io/Objector-Coder/icon.svg">
+<!-- Android Chrome -->
+<link rel="manifest" href="https://tomlct2015.github.io/Objector-Coder/icon.svg">
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="pageTitle">Objector - 图形化积木编程编辑器</title>
+<style>
+/* ===== Reset & Base ===== */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a1a;--bg2:#111128;--surface:#1a1a3e;--surface2:#252550;
+  --text:#e8e8f0;--text2:#a0a0c0;--muted:#6a6a90;
+  --accent:#6c5ce7;--accent2:#a29bfe;--cyan:#00d2d3;--green:#00b894;
+  --pink:#fd79a8;--orange:#fdcb6e;--blue:#74b9ff;
+  --glow:0 0 40px rgba(108,92,231,.3);
+  --radius:12px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;line-height:1.7}
+a{color:var(--accent2);text-decoration:none;transition:color .2s}
+a:hover{color:var(--cyan)}
+
+/* ===== Animated Background ===== */
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(108,92,231,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(108,92,231,.04) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+.bg-glow{position:fixed;z-index:0;pointer-events:none;width:600px;height:600px;border-radius:50%;filter:blur(120px);opacity:.15}
+.bg-glow-1{top:-200px;left:-100px;background:var(--accent)}
+.bg-glow-2{bottom:-200px;right:-100px;background:var(--cyan)}
+.bg-glow-3{top:50%;left:50%;transform:translate(-50%,-50%);background:var(--pink);opacity:.06}
+
+/* ===== Layout ===== */
+.container{max-width:1200px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+section{padding:80px 0}
+
+/* ===== Navigation ===== */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 0;transition:all .3s}
+nav.scrolled{background:rgba(10,10,26,.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(108,92,231,.2)}
+nav .container{display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--accent2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;gap:32px;align-items:center}
+.nav-links a{font-size:14px;color:var(--text2);font-weight:500;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:var(--accent2);transition:width .3s}
+.nav-links a:hover{color:var(--text)}
+.nav-links a:hover::after{width:100%}
+.nav-cta{background:linear-gradient(135deg,var(--accent),#8b5cf6);color:#fff!important;padding:8px 20px;border-radius:8px;font-weight:600;font-size:13px;border:none;cursor:pointer;transition:all .3s;box-shadow:0 4px 15px rgba(108,92,231,.4)}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(108,92,231,.5)}
+.nav-web-btn{background:linear-gradient(135deg,var(--cyan),#00b894);color:#fff!important;padding:8px 20px;border-radius:8px;font-weight:700;font-size:13px;border:none;cursor:pointer;transition:all .3s;box-shadow:0 4px 15px rgba(0,210,211,.4);text-decoration:none}
+.nav-web-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,210,211,.5);color:#fff!important}
+
+/* ===== Hero ===== */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding-top:100px;position:relative}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(108,92,231,.15);border:1px solid rgba(108,92,231,.3);border-radius:20px;padding:6px 16px;font-size:12px;color:var(--accent2);margin-bottom:24px;animation:fadeInDown .8s}
+.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+.hero h1{font-size:clamp(40px,6vw,72px);font-weight:900;line-height:1.1;margin-bottom:20px;animation:fadeInUp .8s .2s both}
+.hero h1 .gradient{background:linear-gradient(135deg,var(--accent2),var(--cyan),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:200% 200%;animation:gradientShift 4s ease infinite}
+.hero-sub{font-size:clamp(16px,2vw,20px);color:var(--text2);max-width:600px;margin:0 auto 40px;animation:fadeInUp .8s .4s both}
+.hero-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;animation:fadeInUp .8s .6s both}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--accent),#8b5cf6);color:#fff;padding:14px 32px;border-radius:12px;font-size:16px;font-weight:700;border:none;cursor:pointer;transition:all .3s;box-shadow:0 8px 30px rgba(108,92,231,.4)}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(108,92,231,.5)}
+.btn-secondary{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);color:var(--text);padding:14px 32px;border-radius:12px;font-size:16px;font-weight:600;border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:all .3s}
+.btn-secondary:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);transform:translateY(-3px)}
+.hero-stats{display:flex;gap:48px;justify-content:center;margin-top:60px;animation:fadeInUp .8s .8s both}
+.stat{text-align:center}
+.stat-num{font-size:32px;font-weight:800;background:linear-gradient(135deg,var(--cyan),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-label{font-size:12px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+
+/* ===== App Preview ===== */
+.preview{padding:40px 0 80px;text-align:center}
+.preview-frame{position:relative;max-width:960px;margin:0 auto;border-radius:16px;overflow:hidden;border:1px solid rgba(108,92,231,.3);box-shadow:var(--glow),0 20px 60px rgba(0,0,0,.5)}
+.preview-frame::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(108,92,231,.08),transparent 40%);pointer-events:none;z-index:2}
+.preview-titlebar{background:var(--surface);padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(108,92,231,.2)}
+.preview-dot{width:10px;height:10px;border-radius:50%}
+.preview-dot:nth-child(1){background:#ff5f57}
+.preview-dot:nth-child(2){background:#ffbd2e}
+.preview-dot:nth-child(3){background:#28ca42}
+.preview-title{flex:1;text-align:center;font-size:12px;color:var(--muted)}
+.preview-body{background:var(--bg2);min-height:400px;display:flex;position:relative}
+.preview-palette{width:180px;background:var(--surface);border-right:1px solid rgba(108,92,231,.1);padding:12px;display:flex;flex-direction:column;gap:6px}
+.preview-cat{padding:5px 10px;border-radius:6px;font-size:11px;color:#fff;font-weight:600}
+.preview-block{padding:8px 12px;border-radius:6px;font-size:11px;color:rgba(255,255,255,.9);font-weight:500;opacity:.8}
+.preview-editor{flex:1;position:relative;padding:24px}
+.preview-blocks-chain{position:absolute;top:40px;left:40px}
+.p-block{padding:10px 16px;border-radius:8px;font-size:12px;color:#fff;font-weight:600;margin-bottom:-2px;position:relative;box-shadow:0 2px 8px rgba(0,0,0,.3);display:inline-block}
+.p-block.hat{border-radius:16px 16px 8px 8px;padding-top:14px}
+.p-block .p-param{background:rgba(255,255,255,.2);padding:1px 8px;border-radius:4px;font-size:11px}
+.preview-stage{width:280px;background:#11111b;border-left:1px solid rgba(108,92,231,.1);display:flex;flex-direction:column}
+.preview-stage-canvas{flex:1;margin:12px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;position:relative}
+.preview-sprite{position:relative}
+.preview-sprite-arrow{width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-bottom:30px solid #4C97FF;filter:drop-shadow(0 2px 4px rgba(0,0,0,.2))}
+.preview-sprite-eye{position:absolute;width:5px;height:5px;background:#fff;border-radius:50%}
+.preview-stage-tabs{display:flex;border-top:1px solid rgba(108,92,231,.1);padding:6px 12px}
+.preview-stage-tab{font-size:11px;color:var(--muted);padding:4px 8px}
+.preview-stage-tab.active{color:var(--cyan)}
+
+/* ===== Features ===== */
+.features{background:linear-gradient(180deg,var(--bg),var(--bg2),var(--bg))}
+.section-header{text-align:center;margin-bottom:60px}
+.section-tag{display:inline-block;background:rgba(108,92,231,.15);color:var(--accent2);padding:4px 14px;border-radius:16px;font-size:12px;font-weight:600;margin-bottom:16px;letter-spacing:1px}
+.section-title{font-size:clamp(28px,4vw,42px);font-weight:800;margin-bottom:12px}
+.section-desc{color:var(--text2);max-width:500px;margin:0 auto;font-size:15px}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px}
+.feature-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:32px;transition:all .4s;position:relative;overflow:hidden}
+.feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent2),transparent);opacity:0;transition:opacity .4s}
+.feature-card:hover{background:rgba(255,255,255,.05);border-color:rgba(108,92,231,.3);transform:translateY(-4px)}
+.feature-card:hover::before{opacity:1}
+.feature-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:20px}
+.feature-card h3{font-size:18px;font-weight:700;margin-bottom:8px}
+.feature-card p{font-size:14px;color:var(--text2);line-height:1.7}
+.feature-tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:4px;margin-top:12px;font-weight:600}
+
+/* ===== Block Modules ===== */
+.modules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-top:40px}
+.module-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:20px;text-align:center;transition:all .3s}
+.module-card:hover{transform:translateY(-4px);border-color:rgba(108,92,231,.3)}
+.module-icon{font-size:28px;margin-bottom:8px}
+.module-name{font-size:14px;font-weight:700;margin-bottom:4px}
+.module-count{font-size:11px;color:var(--muted)}
+
+/* ===== Mode Comparison ===== */
+.mode-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-top:40px}
+.mode-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:32px;text-align:center;transition:all .4s;position:relative}
+.mode-card:hover{transform:translateY(-6px);border-color:rgba(108,92,231,.3)}
+.mode-card.featured{border-color:rgba(108,92,231,.4);background:rgba(108,92,231,.06)}
+.mode-card.featured::after{content:'推荐';position:absolute;top:12px;right:12px;background:linear-gradient(135deg,var(--accent),var(--pink));color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px}
+.mode-emoji{font-size:48px;margin-bottom:16px}
+.mode-name{font-size:20px;font-weight:800;margin-bottom:8px}
+.mode-desc{font-size:13px;color:var(--text2);margin-bottom:20px}
+.mode-features{list-style:none;text-align:left;display:flex;flex-direction:column;gap:8px}
+.mode-features li{font-size:13px;color:var(--text2);display:flex;align-items:center;gap:8px}
+.mode-features li::before{content:'✓';color:var(--green);font-weight:700;font-size:14px}
+
+/* ===== Tech Stack ===== */
+.tech-stack{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:32px}
+.tech-badge{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:8px 16px;font-size:13px;color:var(--text2);display:flex;align-items:center;gap:8px;transition:all .3s}
+.tech-badge:hover{background:rgba(255,255,255,.08);border-color:rgba(108,92,231,.3);transform:translateY(-2px)}
+.tech-badge .tech-dot{width:8px;height:8px;border-radius:50%}
+
+/* ===== Download Section ===== */
+.download{text-align:center;position:relative}
+.download::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(108,92,231,.1),transparent 70%);pointer-events:none}
+.download-card{display:inline-block;background:rgba(255,255,255,.03);border:1px solid rgba(108,92,231,.3);border-radius:20px;padding:48px;max-width:1000px;width:100%;box-shadow:var(--glow)}
+.download-card h3{font-size:28px;font-weight:800;margin-bottom:8px}
+.download-card .version{font-size:13px;color:var(--muted);margin-bottom:24px}
+.download-card p{font-size:14px;color:var(--text2);margin-bottom:32px}
+.download-btn{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,var(--accent),#8b5cf6);color:#fff;padding:16px 40px;border-radius:14px;font-size:18px;font-weight:700;border:none;cursor:pointer;transition:all .3s;box-shadow:0 8px 30px rgba(108,92,231,.4);text-decoration:none}
+.download-btn:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(108,92,231,.6);color:#fff}
+.download-info{display:flex;gap:24px;justify-content:center;margin-top:20px;font-size:12px;color:var(--muted)}
+
+/* ===== Footer ===== */
+footer{padding:40px 0;border-top:1px solid rgba(255,255,255,.06);text-align:center}
+footer p{font-size:13px;color:var(--muted)}
+.footer-links{display:flex;gap:24px;justify-content:center;margin-bottom:16px}
+.footer-links a{font-size:13px;color:var(--text2)}
+
+/* ===== Animations ===== */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeInDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes gradientShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes slideInLeft{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes typewriter{from{width:0}to{width:100%}}
+
+.reveal{opacity:0;transform:translateY(40px);transition:all .8s cubic-bezier(.25,.46,.45,.94)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ===== Responsive ===== */
+@media(max-width:768px){
+  .nav-links{display:none}
+  .hero-stats{gap:24px}
+  .stat-num{font-size:24px}
+  .preview-body{flex-direction:column}
+  .preview-palette,.preview-stage{width:100%}
+  .preview-palette{flex-direction:row;flex-wrap:wrap}
+  .preview-stage{min-height:200px}
+  .feature-grid{grid-template-columns:1fr}
+  .mode-cards{grid-template-columns:1fr}
+  .modules-grid{grid-template-columns:repeat(2,1fr)}
+  section{padding:60px 0}
+}
+@media(max-width:480px){
+  .hero-actions{flex-direction:column;align-items:center}
+  .hero-stats{flex-direction:column;gap:16px}
+  .modules-grid{grid-template-columns:1fr}
+}
+
+/* ===== Scroll indicator ===== */
+.scroll-indicator{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);animation:float 3s ease-in-out infinite}
+.scroll-indicator span{display:block;width:20px;height:30px;border:2px solid rgba(255,255,255,.3);border-radius:10px;position:relative}
+.scroll-indicator span::after{content:'';position:absolute;top:6px;left:50%;transform:translateX(-50%);width:3px;height:8px;background:var(--accent2);border-radius:2px;animation:pulse 2s infinite}
+
+/* ===== Language Switcher ===== */
+.lang-switcher{display:flex;gap:2px;background:rgba(255,255,255,.06);border-radius:6px;padding:2px;border:1px solid rgba(255,255,255,.1)}
+.lang-btn{padding:4px 10px;border-radius:4px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
+.lang-btn.active{background:var(--accent);color:#fff}
+.lang-btn:hover:not(.active){background:rgba(255,255,255,.08)}
+html[lang="en"] .mode-card.featured::after{content:'Recommended'}
+</style>
+</head>
+<body>
+
+<!-- Background Effects -->
+<div class="bg-grid"></div>
+<div class="bg-glow bg-glow-1"></div>
+<div class="bg-glow bg-glow-2"></div>
+<div class="bg-glow bg-glow-3"></div>
+
+<!-- Navigation -->
+<nav id="navbar">
+  <div class="container">
+    <div class="nav-logo"><img src="https://tomlct2015.github.io/Objector-Coder/icon.svg" width="25"> Objector</div>
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('zh-CN')">中文</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+    </div>
+    <div class="nav-links">
+      <a href="#features" data-i18n="nav.features">功能特性</a>
+      <a href="#v1030" data-i18n="nav.v1030">v1.0.30 新特性</a>
+      <a href="#modules" data-i18n="nav.modules">积木模块</a>
+      <a href="#modes" data-i18n="nav.modes">编辑模式</a>
+      <a href="https://tomlct2015.github.io/Objector-Coder/blocks-guide/" data-i18n="nav.blocksGuide">📖 积木指南</a>
+      <a href="https://tomlct2015.github.io/Objector-Coder/extension-api" data-i18n="nav.extensionApi">📖 扩展API</a>
+      <a href="https://tomlct2015.github.io/Objector-Coder/editor/" class="nav-web-btn" data-i18n="nav.webVersion">🌐 网页版</a>
+      <a href="#download" class="nav-cta" data-i18n="nav.download">立即下载</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      <span data-i18n="hero.badge">v1.0.30 桌面版 · 开源免费</span>
+    </div>
+    <h1 data-i18n="hero.title">用积木搭建<br><span class="gradient">无限创意</span></h1>
+    <p class="hero-sub" data-i18n="hero.sub">Objector 是一款强大的图形化积木编程编辑器，让零基础用户也能创作动画、游戏和交互式程序。从入门到专业开发，一站搞定。</p>
+    <div class="hero-actions">
+      <a href="#download" class="btn-primary">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span data-i18n="hero.download">免费下载</span>
+      </a>
+      <a href="https://tomlct2015.github.io/Objector-Coder/editor/" class="btn-secondary" style="border-color:rgba(0,210,211,.5);color:var(--cyan)">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+        <span data-i18n="hero.online">🌐 在线体验网页版</span>
+      </a>
+      <a href="#features" class="btn-secondary">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+        <span data-i18n="hero.learnMore">了解更多</span>
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-num">120+</div>
+        <div class="stat-label" data-i18n="hero.blocks">积木块</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">12</div>
+        <div class="stat-label" data-i18n="hero.modules">功能模块</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">3</div>
+        <div class="stat-label" data-i18n="hero.editModes">编辑模式</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">∞</div>
+        <div class="stat-label" data-i18n="hero.possibilities">可能性</div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-indicator"><span></span></div>
+</section>
+
+<!-- App Preview -->
+<section class="preview">
+  <img src="preview.png" width="1000">
+</section>
+
+<!-- Features Section -->
+<section id="features" class="features">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag" data-i18n="features.tag">✨ 核心特性</div>
+      <h2 class="section-title" data-i18n="features.title">为创造力而生的编辑器</h2>
+      <p class="section-desc" data-i18n="features.desc">不仅仅是 Scratch 的复刻，更是面向专业开发者的全面进化。15 大核心特性，覆盖创作全流程。</p>
+    </div>
+    <div class="feature-grid">
+
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(108,92,231,.15)">🧩</div>
+        <h3 data-i18n="features.c1.title">可视化积木编程</h3>
+        <p data-i18n="features.c1.desc">拖拽式积木操作，所见即所得。支持流程连接、参数嵌入、子代码块，直观的可视化让编程学习零门槛。</p>
+        <span class="feature-tag" style="background:rgba(108,92,231,.15);color:var(--accent2)" data-i18n="features.c1.tag">核心引擎</span>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(0,210,211,.15)">🐛</div>
+        <h3 data-i18n="features.c2.title">专业调试系统</h3>
+        <p data-i18n="features.c2.desc">开发者模式下支持断点设置、单步执行、变量监视面板。精确追踪每一行代码的执行状态，像真正的 IDE 一样调试。</p>
+        <span class="feature-tag" style="background:rgba(0,210,211,.15);color:var(--cyan)" data-i18n="features.c2.tag">开发者级</span>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(253,121,168,.15)">🏗️</div>
+        <h3 data-i18n="features.c3.title">自定义函数</h3>
+        <p data-i18n="features.c3.desc">支持多参数函数定义与调用，动态参数槽自动扩展。像写真正的代码一样封装可复用的逻辑模块。</p>
+        <span class="feature-tag" style="background:rgba(253,121,168,.15);color:var(--pink)" data-i18n="features.c3.tag">高级功能</span>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(0,184,148,.15)">⚡</div>
+        <h3 data-i18n="features.c4.title">物理运动系统</h3>
+        <p data-i18n="features.c4.desc">超越 Scratch：内置速度、加速度、重力、摩擦力、碰撞反弹等物理特性。轻松实现真实物理效果的动画和游戏。</p>
+        <span class="feature-tag" style="background:rgba(0,184,148,.15);color:var(--green)" data-i18n="features.c4.tag">超越 Scratch</span>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(253,203,110,.15)">🎨</div>
+        <h3 data-i18n="features.c5.title">全局造型库</h3>
+        <p data-i18n="features.c5.desc">图片上传到项目统一管理，多个角色共享同一造型文件。智能资源复用，节省存储空间和内存。</p>
+        <span class="feature-tag" style="background:rgba(253,203,110,.15);color:var(--orange)" data-i18n="features.c5.tag">资源管理</span>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(116,185,255,.15)">🧪</div>
+        <h3 data-i18n="features.c6.title">扩展系统</h3>
+        <p data-i18n="features.c6.desc">通过 JSON/JS 扩展文件自定义积木类型，为编辑器添加无限新功能。打造属于你自己的编程工具箱。</p>
+        <span class="feature-tag" style="background:rgba(116,185,255,.15);color:var(--blue)" data-i18n="features.c6.tag">可扩展</span>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(162,155,254,.15)">📝</div>
+        <h3 data-i18n="features.c7.title">积木批注</h3>
+        <p data-i18n="features.c7.desc">为任何积木添加注释说明，提升代码可读性。特别适合教学场景和团队协作。</p>
+        <span class="feature-tag" style="background:rgba(162,155,254,.15);color:var(--accent2)" data-i18n="features.c7.tag">教学友好</span>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(253,121,168,.15)">🌐</div>
+        <h3 data-i18n="features.c8.title">导出 HTML</h3>
+        <p data-i18n="features.c8.desc">一键将项目导出为可独立运行的 HTML 文件。无需安装任何软件即可在任何浏览器中运行你的作品。</p>
+        <span class="feature-tag" style="background:rgba(253,121,168,.15);color:var(--pink)" data-i18n="features.c8.tag">分享便捷</span>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(0,210,211,.15)">🎵</div>
+        <h3 data-i18n="features.c9.title">声音系统</h3>
+        <p data-i18n="features.c9.desc">支持加载和播放音频文件，通过声音积木为角色添加音效。让你的作品更加生动有趣。</p>
+        <span class="feature-tag" style="background:rgba(0,210,211,.15);color:var(--cyan)" data-i18n="features.c9.tag">多媒体</span>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(108,92,231,.15)">🤖</div>
+        <h3 data-i18n="features.c10.title">AI 智能助手</h3>
+        <p data-i18n="features.c10.desc">内置 AI 对话助手，支持 OpenAI/DeepSeek/通义千问等多种模型。用自然语言描述功能，AI 自动生成积木、解释代码、调试建议。</p>
+        <span class="feature-tag" style="background:rgba(108,92,231,.15);color:var(--accent2)" data-i18n="features.c10.tag">AI 驱动</span>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(253,121,168,.15)">📋</div>
+        <h3 data-i18n="features.c11.title">输出控制台</h3>
+        <p data-i18n="features.c11.desc">实时显示程序运行输出、错误信息和调试日志。像真正的 IDE 一样查看程序执行状态，快速定位问题。</p>
+        <span class="feature-tag" style="background:rgba(253,121,168,.15);color:var(--pink)" data-i18n="features.c11.tag">调试</span>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(0,184,148,.15)">⌨️</div>
+        <h3 data-i18n="features.c12.title">命令行窗口</h3>
+        <p data-i18n="features.c12.desc">独立命令行界面，支持直接输入命令操作角色和项目。命令历史记录、自动补全，高效操作。</p>
+        <span class="feature-tag" style="background:rgba(0,184,148,.15);color:var(--green)" data-i18n="features.c12.tag">专业工具</span>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(253,203,110,.15)">↩️</div>
+        <h3 data-i18n="features.c13.title">撤销/重做</h3>
+        <p data-i18n="features.c13.desc">Ctrl+Z 撤销、Ctrl+Y 重做，最多 50 步历史记录。30 秒自动保存防止意外丢失，让创作无后顾之忧。</p>
+        <span class="feature-tag" style="background:rgba(253,203,110,.15);color:var(--orange)" data-i18n="features.c13.tag">安全</span>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(116,185,255,.15)">🔍</div>
+        <h3 data-i18n="features.c14.title">积木搜索</h3>
+        <p data-i18n="features.c14.desc">Ctrl+F 快速搜索积木，支持按类型、标签、参数值过滤。Shift+点击多选积木批量操作，大项目管理更高效。</p>
+        <span class="feature-tag" style="background:rgba(116,185,255,.15);color:var(--blue)" data-i18n="features.c14.tag">效率</span>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(162,155,254,.15)">📖</div>
+        <h3 data-i18n="features.c15.title">交互式教程</h3>
+        <p data-i18n="features.c15.desc">内置交互式入门教程，逐步引导新用户上手。高亮显示 UI 元素，让学习过程更加直观有趣。</p>
+        <span class="feature-tag" style="background:rgba(162,155,254,.15);color:var(--accent2)" data-i18n="features.c15.tag">入门友好</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- What's New in v1.0.30 -->
+<section id="v1030" style="background:linear-gradient(180deg,var(--bg2),var(--bg))">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag" data-i18n="v1030.tag">🆕 v1.0.30 新特性</div>
+      <h2 class="section-title" data-i18n="v1030.title">扩展管理系统 + 卡片式扩展弹窗 + 项目自动恢复</h2>
+      <p class="section-desc" data-i18n="v1030.desc">扩展默认不加载，通过积木分类栏末尾的 + 按钮手动安装/卸载，卡片形式展示，项目加载时自动恢复已安装扩展</p>
+    </div>
+    <div class="feature-grid">
+
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(108,92,231,.15)">🧩</div>
+        <h3 data-i18n="v1030.c1.title">扩展管理系统</h3>
+        <p data-i18n="v1030.c1.desc">扩展默认不自动加载，需在积木分类栏末尾点击 + 按钮打开管理弹窗，手动安装或卸载扩展，减少默认资源占用。</p>
+        <span class="feature-tag" style="background:rgba(108,92,231,.15);color:var(--accent)" data-i18n="v1030.c1.tag">扩展</span>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(166,227,161,.15)">🎴</div>
+        <h3 data-i18n="v1030.c2.title">卡片式扩展弹窗</h3>
+        <p data-i18n="v1030.c2.desc">每个扩展以卡片形式展示，包含彩色主题条、图标、名称和描述，双列网格布局，视觉清晰美观。</p>
+        <span class="feature-tag" style="background:rgba(166,227,161,.15);color:#a6e3a1" data-i18n="v1030.c2.tag">UI</span>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(249,226,175,.15)">💾</div>
+        <h3 data-i18n="v1030.c3.title">项目自动恢复扩展</h3>
+        <p data-i18n="v1030.c3.desc">保存项目时自动记录已安装的扩展 ID，下次打开项目时自动恢复，无需重复手动安装。</p>
+        <span class="feature-tag" style="background:rgba(249,226,175,.15);color:#f9e2af" data-i18n="v1030.c3.tag">体验</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Block Modules Section -->
+<section id="modules">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag" data-i18n="modules.tag">🧱 积木模块</div>
+      <h2 class="section-title" data-i18n="modules.title">12 大功能模块</h2>
+      <p class="section-desc" data-i18n="modules.desc">覆盖编程学习的方方面面</p>
+    </div>
+    <div class="modules-grid reveal">
+      <div class="module-card">
+        <div class="module-icon">🚩</div>
+        <div class="module-name">事件</div>
+        <div class="module-count">程序入口 · 消息触发</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">🏃</div>
+        <div class="module-name">运动</div>
+        <div class="module-count">移动 · 物理 · 追踪</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">🎨</div>
+        <div class="module-name">外观</div>
+        <div class="module-count">造型 · 对话 · 可见性</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">🔀</div>
+        <div class="module-name">控制</div>
+        <div class="module-count">循环 · 条件 · 延时</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">📐</div>
+        <div class="module-name">运算</div>
+        <div class="module-count">数学 · 逻辑 · 字符串</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">📦</div>
+        <div class="module-name">变量</div>
+        <div class="module-count">赋值 · 自增 · 类型转换</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">🏗️</div>
+        <div class="module-name">函数</div>
+        <div class="module-count">定义 · 调用 · 返回值</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">🎓</div>
+        <div class="module-name">面向对象</div>
+        <div class="module-count">类 · 继承 · 属性</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">📋</div>
+        <div class="module-name">列表</div>
+        <div class="module-count">增删 · 遍历 · 查询</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">🎵</div>
+        <div class="module-name">声音</div>
+        <div class="module-count">播放 · 停止 · 音量</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">🎥</div>
+        <div class="module-name">3D</div>
+        <div class="module-count">网格 · 相机 · 场景</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">🎮</div>
+        <div class="module-name">传感</div>
+        <div class="module-count">鼠标 · 键盘 · 碰撞</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Mode Comparison -->
+<section id="modes" style="background:linear-gradient(180deg,var(--bg),var(--bg2))">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag" data-i18n="modes.tag">🎯 三种模式</div>
+      <h2 class="section-title" data-i18n="modes.title">适合每一个人</h2>
+      <p class="section-desc" data-i18n="modes.desc">无论你是编程新手还是经验丰富的开发者</p>
+    </div>
+    <div class="mode-cards">
+      <div class="mode-card reveal">
+        <div class="mode-emoji">🌱</div>
+        <div class="mode-name" data-i18n="modes.c1.name">新手模式</div>
+        <div class="mode-desc" data-i18n="modes.c1.desc">专为零基础设计</div>
+        <ul class="mode-features">
+          <li data-i18n="modes.c1.f1">精简积木分类，降低复杂度</li>
+          <li data-i18n="modes.c1.f2">隐藏高级功能模块</li>
+          <li data-i18n="modes.c1.f3">分类引导提示</li>
+          <li data-i18n="modes.c1.f4">循序渐进的学习曲线</li>
+        </ul>
+      </div>
+      <div class="mode-card featured reveal">
+        <div class="mode-emoji">🚀</div>
+        <div class="mode-name" data-i18n="modes.c2.name">普通模式</div>
+        <div class="mode-desc" data-i18n="modes.c2.desc">完整的创作体验</div>
+        <ul class="mode-features">
+          <li data-i18n="modes.c2.f1">全部 100+ 积木块</li>
+          <li data-i18n="modes.c2.f2">完整函数系统</li>
+          <li data-i18n="modes.c2.f3">代码折叠</li>
+          <li data-i18n="modes.c2.f4">积木批注</li>
+          <li data-i18n="modes.c2.f5">造型库管理</li>
+          <li data-i18n="modes.c2.f6">HTML 导出</li>
+        </ul>
+      </div>
+      <div class="mode-card reveal">
+        <div class="mode-emoji">🛠️</div>
+        <div class="mode-name" data-i18n="modes.c3.name">开发者模式</div>
+        <div class="mode-desc" data-i18n="modes.c3.desc">专业调试工具</div>
+        <ul class="mode-features">
+          <li data-i18n="modes.c3.f1">断点设置与单步执行</li>
+          <li data-i18n="modes.c3.f2">变量实时监视面板</li>
+          <li data-i18n="modes.c3.f3">执行流可视化高亮</li>
+          <li data-i18n="modes.c3.f4">运行到此处功能</li>
+          <li data-i18n="modes.c3.f5">完整的调试工具链</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Tech Stack -->
+<section id="tech">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag" data-i18n="tech.tag">⚙️ 技术架构</div>
+      <h2 class="section-title" data-i18n="tech.title">构建于现代技术之上</h2>
+    </div>
+    <div class="tech-stack reveal">
+      <div class="tech-badge"><div class="tech-dot" style="background:#47848F"></div>Electron</div>
+      <div class="tech-badge"><div class="tech-dot" style="background:#F7DF1E"></div>JavaScript</div>
+      <div class="tech-badge"><div class="tech-dot" style="background:#1572B6"></div>Canvas 2D</div>
+      <div class="tech-badge"><div class="tech-dot" style="background:#E34F26"></div>HTML5</div>
+      <div class="tech-badge"><div class="tech-dot" style="background:#1572B6"></div>CSS3</div>
+      <div class="tech-badge"><div class="tech-dot" style="background:#339933"></div>Node.js</div>
+      <div class="tech-badge"><div class="tech-dot" style="background:#8B5CF6"></div>Electron Forge</div>
+      <div class="tech-badge"><div class="tech-dot" style="background:#FF6680"></div>Custom Renderer</div>
+      <div class="tech-badge"><div class="tech-dot" style="background:#049EF4"></div>Three.js</div>
+    </div>
+    <div style="text-align:center;margin-top:48px" class="reveal">
+      <div class="feature-card" style="display:inline-block;max-width:600px;text-align:left">
+        <h3 style="margin-bottom:12px" data-i18n="tech.sysReq">🖥️ 系统要求</h3>
+        <div style="display:grid;grid-template-columns:120px 1fr;gap:8px;font-size:14px;color:var(--text2)">
+          <span style="color:var(--muted)" data-i18n="tech.os">操作系统</span><span data-i18n="tech.osVal">Windows 10+ / Linux x64 / macOS (网页版)</span>
+          <span style="color:var(--muted)" data-i18n="tech.install">安装方式</span><span data-i18n="tech.installVal">绿色免安装 / 安装包</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Download Section -->
+<section id="download" class="download">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag" data-i18n="download.tag">📥 立即下载</div>
+      <h2 class="section-title" data-i18n="download.title">开始你的创意之旅</h2>
+    </div>
+    <div class="download-card reveal" style="padding:40px;">
+      <div style="text-align:center;margin-bottom:32px;">
+        <h3 style="margin-bottom:8px;">Objector</h3>
+        <div class="version" data-i18n="download.version">版本 1.0.30 · 发布于 2026</div>
+        <p style="margin-top:8px;" data-i18n="download.desc">免费下载，无需注册。支持 Windows、Linux 和 macOS（网页版）平台。</p>
+      </div>
+
+      <!-- 平台下载卡片 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px;"> 
+
+        <!-- Windows -->
+        <div style="background:rgba(108,92,231,.08);border:1px solid rgba(108,92,231,.25);border-radius:12px;padding:28px 24px;text-align:center;">
+          <img src="WindowsIcon.png" alt="Windows" style="width:48px;height:48px;margin-bottom:16px;">
+          <h4 style="color:var(--accent2);margin-bottom:4px;font-size:18px;">Windows</h4>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:20px;" data-i18n="download.winReq">Windows 10 及以上 · x64</p>
+          <a href="https://github.com/tomlct2015/Objector/releases/download/v1.0.30/Objector-Setup-1.0.30.exe" class="download-btn" style="width:100%;justify-content:center;background:linear-gradient(to bottom,#8b5cf6,#ab93e4);">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span data-i18n="download.installer">安装包 (.exe)</span>
+          </a>
+          <a href="https://github.com/tomlct2015/Objector/releases/download/v1.0.30/Objector-1.0.30-win.zip" class="download-btn" style="width:100%;justify-content:center;margin-top:10px;font-size:14px;padding:10px 24px;background:linear-gradient(135deg,#2d3436,#636e72);">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span data-i18n="download.zip">免安装压缩包 (.zip)</span>
+          </a>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:12px;">
+            🇨🇳 <a href="https://mirror.ghproxy.com/https://github.com/tomlct2015/Objector/releases/download/v1.0.30/Objector-Setup-1.0.30.exe" style="color:var(--accent2);">镜像加速下载</a> · 
+            <a href="https://mirror.ghproxy.com/https://github.com/tomlct2015/Objector/releases/download/v1.0.30/Objector-1.0.30-win.zip" style="color:var(--accent2);">ZIP 镜像</a>
+          </p>
+        </div>
+
+        <!-- Linux -->
+        <div style="background:rgba(253,203,110,.08);border:1px solid rgba(253,203,110,.25);border-radius:12px;padding:28px 24px;text-align:center;">
+          <img src="LinuxIcon.png" alt="Linux" style="width:48px;height:48px;margin-bottom:16px;">
+          <h4 style="color:var(--accent2);margin-bottom:4px;font-size:18px;">Linux</h4>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:20px;">Ubuntu / Fedora / Arch · x64</p>
+          <a href="https://github.com/tomlct2015/Objector/releases/download/v1.0.28/objector-1.0.28.tar.gz" class="download-btn" style="width:100%;justify-content:center;background:linear-gradient(to bottom,#fdcb6e,#e17055);">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span data-i18n="download.linuxTar">Linux 压缩包 (.tar.gz)</span>
+          </a>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:12px;">
+            <span data-i18n="download.linuxReq">需要 libgtk-3 和 libnss3</span><br>
+            🇨🇳 <a href="https://mirror.ghproxy.com/https://github.com/tomlct2015/Objector/releases/download/v1.0.28/objector-1.0.28.tar.gz" style="color:var(--accent2);">镜像加速下载</a>
+          </p>
+        </div>
+
+      </div>
+      <a href="versions.html" style="color:var(--accent2)" data-i18n="download.versions">📜 历史版本下载</a>
+
+      <!-- 在线版 & 社区 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+        <a href="https://tomlct2015.github.io/Objector-Coder/editor/" class="download-btn" style="justify-content:center;background:linear-gradient(135deg,var(--cyan),#00b894);">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          <span data-i18n="download.onlineEditor">🌐 在线编辑器（无需安装）</span>
+        </a>
+        <a href="https://tomlct2015.github.io/Objector-Coder/community/" class="download-btn" style="justify-content:center;background:linear-gradient(135deg,var(--cyan),#00b894);">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          <span data-i18n="download.community">🌐 社区</span>
+        </a>
+      </div>
+
+      <div class="download-info" style="text-align:center;">
+        <a href="https://tomlct2015.github.io/Objector-Coder/blocks-guide/" style="color:var(--accent2)" data-i18n="download.guide">📖 积木用法指南</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-links">
+      <a href="#features" id="ft-features">功能特性</a>
+      <a href="#modules" id="ft-modules">积木模块</a>
+      <a href="#modes" id="ft-modes">编辑模式</a>
+      <a href="#download" id="ft-download">下载</a>
+    </div>
+    <p id="ft-copyright">© 2026 Objector. 用积木搭建无限创意。</p>
+  </div>
+</footer>
+
+<script>
+// ===== Scroll Reveal =====
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ===== Navbar scroll effect =====
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// ===== Smooth scroll for nav links =====
+document.querySelectorAll('a[href^="#"]').forEach(link => {
+  link.addEventListener('click', (e) => {
+    const target = document.querySelector(link.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+// ===== Parallax glow effect =====
+window.addEventListener('mousemove', (e) => {
+  const x = e.clientX / window.innerWidth;
+  const y = e.clientY / window.innerHeight;
+  document.querySelector('.bg-glow-1').style.transform = `translate(${x * 30}px, ${y * 30}px)`;
+  document.querySelector('.bg-glow-2').style.transform = `translate(${-x * 30}px, ${-y * 30}px)`;
+  document.querySelector('.bg-glow-3').style.transform = `translate(${(x - 0.5) * 50}px, ${(y - 0.5) * 50}px)`;
+});
+
+// ===== i18n =====
+const i18n = {
+  'zh-CN': {
+    'pageTitle': 'Objector - 图形化积木编程编辑器',
+    'nav.features': '功能特性', 'nav.v1025beta': 'v1.0.25.beta 新特性', 'nav.modules': '积木模块',
+    'nav.modes': '编辑模式', 'nav.blocksGuide': '📖 积木指南', 'nav.extensionApi': '📖 扩展API',
+    'nav.webVersion': '🌐 网页版', 'nav.download': '立即下载',
+    'hero.badge': 'v1.0.25.beta 桌面版 · 开源免费',
+    'hero.title': '用积木搭建<br><span class="gradient">无限创意</span>',
+    'hero.sub': 'Objector 是一款强大的图形化积木编程编辑器，让零基础用户也能创作动画、游戏和交互式程序。从入门到专业开发，一站搞定。',
+    'hero.download': '免费下载', 'hero.online': '🌐 在线体验网页版', 'hero.learnMore': '了解更多',
+    'hero.blocks': '积木块', 'hero.modules': '功能模块', 'hero.editModes': '编辑模式', 'hero.possibilities': '可能性',
+    'features.tag': '✨ 核心特性', 'features.title': '为创造力而生的编辑器',
+    'features.desc': '不仅仅是 Scratch 的复刻，更是面向专业开发者的全面进化。15 大核心特性，覆盖创作全流程。',
+    'features.c1.title': '可视化积木编程',
+    'features.c1.desc': '拖拽式积木操作，所见即所得。支持流程连接、参数嵌入、子代码块，直观的可视化让编程学习零门槛。',
+    'features.c1.tag': '核心引擎',
+    'features.c2.title': '专业调试系统',
+    'features.c2.desc': '开发者模式下支持断点设置、单步执行、变量监视面板。精确追踪每一行代码的执行状态，像真正的 IDE 一样调试。',
+    'features.c2.tag': '开发者级',
+    'features.c3.title': '自定义函数',
+    'features.c3.desc': '支持多参数函数定义与调用，动态参数槽自动扩展。像写真正的代码一样封装可复用的逻辑模块。',
+    'features.c3.tag': '高级功能',
+    'features.c4.title': '物理运动系统',
+    'features.c4.desc': '超越 Scratch：内置速度、加速度、重力、摩擦力、碰撞反弹等物理特性。轻松实现真实物理效果的动画和游戏。',
+    'features.c4.tag': '超越 Scratch',
+    'features.c5.title': '全局造型库',
+    'features.c5.desc': '图片上传到项目统一管理，多个角色共享同一造型文件。智能资源复用，节省存储空间和内存。',
+    'features.c5.tag': '资源管理',
+    'features.c6.title': '扩展系统',
+    'features.c6.desc': '通过 JSON/JS 扩展文件自定义积木类型，为编辑器添加无限新功能。打造属于你自己的编程工具箱。',
+    'features.c6.tag': '可扩展',
+    'features.c7.title': '积木批注',
+    'features.c7.desc': '为任何积木添加注释说明，提升代码可读性。特别适合教学场景和团队协作。',
+    'features.c7.tag': '教学友好',
+    'features.c8.title': '导出 HTML',
+    'features.c8.desc': '一键将项目导出为可独立运行的 HTML 文件。无需安装任何软件即可在任何浏览器中运行你的作品。',
+    'features.c8.tag': '分享便捷',
+    'features.c9.title': '声音系统',
+    'features.c9.desc': '支持加载和播放音频文件，通过声音积木为角色添加音效。让你的作品更加生动有趣。',
+    'features.c9.tag': '多媒体',
+    'features.c10.title': 'AI 智能助手',
+    'features.c10.desc': '内置 AI 对话助手，支持 OpenAI/DeepSeek/通义千问等多种模型。用自然语言描述功能，AI 自动生成积木、解释代码、调试建议。',
+    'features.c10.tag': 'AI 驱动',
+    'features.c11.title': '输出控制台',
+    'features.c11.desc': '实时显示程序运行输出、错误信息和调试日志。像真正的 IDE 一样查看程序执行状态，快速定位问题。',
+    'features.c11.tag': '调试',
+    'features.c12.title': '命令行窗口',
+    'features.c12.desc': '独立命令行界面，支持直接输入命令操作角色和项目。命令历史记录、自动补全，高效操作。',
+    'features.c12.tag': '专业工具',
+    'features.c13.title': '撤销/重做',
+    'features.c13.desc': 'Ctrl+Z 撤销、Ctrl+Y 重做，最多 50 步历史记录。30 秒自动保存防止意外丢失，让创作无后顾之忧。',
+    'features.c13.tag': '安全',
+    'features.c14.title': '积木搜索',
+    'features.c14.desc': 'Ctrl+F 快速搜索积木，支持按类型、标签、参数值过滤。Shift+点击多选积木批量操作，大项目管理更高效。',
+    'features.c14.tag': '效率',
+    'features.c15.title': '交互式教程',
+    'features.c15.desc': '内置交互式入门教程，逐步引导新用户上手。高亮显示 UI 元素，让学习过程更加直观有趣。',
+    'features.c15.tag': '入门友好',
+    'v1025beta.tag': '🆕 v1.0.25.beta 新特性', 'v1025beta.title': '设置面板 + 主题系统 + 协作管理',
+    'v1025beta.desc': '全局设置面板、6种内置主题、自定义CSS编辑器、协作管理、Bug修复',
+    'v1025beta.c1.title': '全局设置面板',
+    'v1025beta.c1.desc': '全新的设置界面，支持外观、编辑器、AI、关于四个标签页，集中管理所有应用配置。',
+    'v1025beta.c1.tag': '设置',
+    'v1025beta.c2.title': '6种内置主题',
+    'v1025beta.c2.desc': '提供默认、深色、浅色、Solarized、Nord、Dracula 六种精心设计的主题，一键切换，实时预览。',
+    'v1025beta.c2.tag': '主题',
+    'v1025beta.c3.title': '自定义CSS编辑器',
+    'v1025beta.c3.desc': '内置CSS编辑器，支持实时预览和重置，让你可以完全自定义应用的外观样式。',
+    'v1025beta.c3.tag': '自定义',
+    'v1025beta.c4.title': '协作管理',
+    'v1025beta.c4.desc': '登录后即可使用协作功能：推送进度、推送到分支、查看人员、分享链接，基于 Supabase 云端同步。',
+    'v1025beta.c4.tag': '协作',
+    'modules.tag': '🧱 积木模块', 'modules.title': '12 大功能模块', 'modules.desc': '覆盖编程学习的方方面面',
+    'modules.names': ['事件','运动','外观','控制','运算','变量','函数','面向对象','列表','声音','3D','传感'],
+    'modules.counts': ['程序入口 · 消息触发','移动 · 物理 · 追踪','造型 · 对话 · 可见性','循环 · 条件 · 延时','数学 · 逻辑 · 字符串','赋值 · 自增 · 类型转换','定义 · 调用 · 返回值','类 · 继承 · 属性','增删 · 遍历 · 查询','播放 · 停止 · 音量','网格 · 相机 · 场景','鼠标 · 键盘 · 碰撞'],
+    'modes.tag': '🎯 三种模式', 'modes.title': '适合每一个人', 'modes.desc': '无论你是编程新手还是经验丰富的开发者',
+    'modes.c1.name': '新手模式', 'modes.c1.desc': '专为零基础设计',
+    'modes.c1.f1': '精简积木分类，降低复杂度', 'modes.c1.f2': '隐藏高级功能模块',
+    'modes.c1.f3': '分类引导提示', 'modes.c1.f4': '循序渐进的学习曲线',
+    'modes.c2.name': '普通模式', 'modes.c2.desc': '完整的创作体验',
+    'modes.c2.f1': '全部 100+ 积木块', 'modes.c2.f2': '完整函数系统',
+    'modes.c2.f3': '代码折叠', 'modes.c2.f4': '积木批注',
+    'modes.c2.f5': '造型库管理', 'modes.c2.f6': 'HTML 导出',
+    'modes.c3.name': '开发者模式', 'modes.c3.desc': '专业调试工具',
+    'modes.c3.f1': '断点设置与单步执行', 'modes.c3.f2': '变量实时监视面板',
+    'modes.c3.f3': '执行流可视化高亮', 'modes.c3.f4': '运行到此处功能', 'modes.c3.f5': '完整的调试工具链',
+    'tech.tag': '⚙️ 技术架构', 'tech.title': '构建于现代技术之上',
+    'tech.sysReq': '🖥️ 系统要求', 'tech.os': '操作系统',
+    'tech.osVal': 'Windows 10+ / Linux x64 / macOS (网页版)',
+    'tech.install': '安装方式', 'tech.installVal': '绿色免安装 / 安装包',
+    'download.tag': '📥 立即下载', 'download.title': '开始你的创意之旅',
+    'download.version': '版本 1.0.25.beta · 发布于 2026',
+    'download.desc': '免费下载，无需注册。支持 Windows、Linux 和 macOS（网页版）平台。',
+    'download.winReq': 'Windows 10 及以上 · x64',
+    'download.installer': '安装包 (.exe)', 'download.zip': '免安装压缩包 (.zip)',
+    'download.aliyun': '下载太慢？试试阿里云盘 →',
+    'download.comingSoon': '即将推出', 'download.linuxPending': 'Linux 版本正在准备中，敬请期待', 'download.linuxTar': 'Linux 压缩包 (.tar.gz)', 'download.linuxReq': '需要 libgtk-3 和 libnss3',
+    'download.versions': '📜 历史版本下载',
+    'download.onlineEditor': '🌐 在线编辑器（无需安装）', 'download.community': '🌐 社区',
+    'download.guide': '📖 积木用法指南',
+    'ft.features': '功能特性', 'ft.modules': '积木模块', 'ft.modes': '编辑模式', 'ft.download': '下载',
+    'ft.copyright': '© 2026 Objector. 用积木搭建无限创意。'
+  },
+  'en': {
+    'pageTitle': 'Objector - Visual Block Programming Editor',
+    'nav.features': 'Features', 'nav.v1025beta': "What's New v1.0.25.beta", 'nav.modules': 'Block Modules',
+    'nav.modes': 'Edit Modes', 'nav.blocksGuide': '📖 Blocks Guide', 'nav.extensionApi': '📖 Extension API',
+    'nav.webVersion': '🌐 Web Version', 'nav.download': 'Download',
+    'hero.badge': 'v1.0.25.beta Desktop · Open Source & Free',
+    'hero.title': 'Build with Blocks<br><span class="gradient">Unlimited Creativity</span>',
+    'hero.sub': 'Objector is a powerful visual block programming editor that enables even beginners to create animations, games, and interactive programs. From beginner to professional development, all in one place.',
+    'hero.download': 'Free Download', 'hero.online': '🌐 Try Online Version', 'hero.learnMore': 'Learn More',
+    'hero.blocks': 'Blocks', 'hero.modules': 'Modules', 'hero.editModes': 'Edit Modes', 'hero.possibilities': 'Possibilities',
+    'features.tag': '✨ Core Features', 'features.title': 'An Editor Built for Creativity',
+    'features.desc': 'Not just a Scratch clone, but a comprehensive evolution for professional developers. 15 core features covering the entire creation workflow.',
+    'features.c1.title': 'Visual Block Programming',
+    'features.c1.desc': 'Drag-and-drop blocks with WYSIWYG. Supports flow connections, parameter embedding, and sub-code blocks. Intuitive visual programming with zero learning curve.',
+    'features.c1.tag': 'Core Engine',
+    'features.c2.title': 'Professional Debugging',
+    'features.c2.desc': 'Developer mode supports breakpoints, step execution, and variable watch panel. Precisely trace every line of code like a real IDE.',
+    'features.c2.tag': 'Developer Grade',
+    'features.c3.title': 'Custom Functions',
+    'features.c3.desc': 'Supports multi-parameter function definitions and calls with dynamic parameter slots. Encapsulate reusable logic modules like real coding.',
+    'features.c3.tag': 'Advanced',
+    'features.c4.title': 'Physics Motion System',
+    'features.c4.desc': 'Beyond Scratch: built-in velocity, acceleration, gravity, friction, and collision bounce. Easily create animations and games with realistic physics.',
+    'features.c4.tag': 'Beyond Scratch',
+    'features.c5.title': 'Global Costume Library',
+    'features.c5.desc': 'Upload images to unified project management. Multiple sprites share the same costume files. Smart resource reuse saves storage and memory.',
+    'features.c5.tag': 'Resource Mgmt',
+    'features.c6.title': 'Extension System',
+    'features.c6.desc': 'Customize block types via JSON/JS extension files to add unlimited new features. Build your own programming toolbox.',
+    'features.c6.tag': 'Extensible',
+    'features.c7.title': 'Block Annotations',
+    'features.c7.desc': 'Add comments to any block to improve code readability. Perfect for teaching scenarios and team collaboration.',
+    'features.c7.tag': 'Teaching Friendly',
+    'features.c8.title': 'Export HTML',
+    'features.c8.desc': 'One-click export to standalone HTML files. Run your creations in any browser without installing any software.',
+    'features.c8.tag': 'Easy Sharing',
+    'features.c9.title': 'Sound System',
+    'features.c9.desc': 'Load and play audio files, add sound effects to sprites via sound blocks. Make your creations more lively and fun.',
+    'features.c9.tag': 'Multimedia',
+    'features.c10.title': 'AI Assistant',
+    'features.c10.desc': 'Built-in AI chat assistant supporting OpenAI/DeepSeek/Qwen and more. Describe features in natural language, AI auto-generates blocks, explains code, and provides debugging suggestions.',
+    'features.c10.tag': 'AI Powered',
+    'features.c11.title': 'Output Console',
+    'features.c11.desc': 'Real-time display of program output, error messages, and debug logs. View program execution status like a real IDE to quickly locate issues.',
+    'features.c11.tag': 'Debug',
+    'features.c12.title': 'Command Line',
+    'features.c12.desc': 'Standalone command line interface for directly operating sprites and projects. Command history and auto-complete for efficient operations.',
+    'features.c12.tag': 'Pro Tool',
+    'features.c13.title': 'Undo/Redo',
+    'features.c13.desc': 'Ctrl+Z to undo, Ctrl+Y to redo, up to 50 history steps. 30-second auto-save prevents accidental data loss.',
+    'features.c13.tag': 'Safety',
+    'features.c14.title': 'Block Search',
+    'features.c14.desc': 'Ctrl+F to quickly search blocks by type, label, or parameter value. Shift+click to multi-select blocks for batch operations.',
+    'features.c14.tag': 'Efficiency',
+    'features.c15.title': 'Interactive Tutorial',
+    'features.c15.desc': 'Built-in interactive tutorial to guide new users step by step. Highlighted UI elements make learning more intuitive and fun.',
+    'features.c15.tag': 'Beginner Friendly',
+    'v1025beta.tag': '🆕 v1.0.25.beta New Features', 'v1025beta.title': 'Settings Panel + Theme System + Collaboration',
+    'v1025beta.desc': 'Global settings panel, 6 built-in themes, custom CSS editor, collaboration, bug fixes',
+    'v1025beta.c1.title': 'Global Settings Panel',
+    'v1025beta.c1.desc': 'Brand new settings interface with four tabs: Appearance, Editor, AI, and About. Centralized management of all app configurations.',
+    'v1025beta.c1.tag': 'Settings',
+    'v1025beta.c2.title': '6 Built-in Themes',
+    'v1025beta.c2.desc': 'Six carefully designed themes: Default, Dark, Light, Solarized, Nord, and Dracula. One-click switching with real-time preview.',
+    'v1025beta.c2.tag': 'Themes',
+    'v1025beta.c3.title': 'Custom CSS Editor',
+    'v1025beta.c3.desc': 'Built-in CSS editor with real-time preview and reset functionality, allowing you to fully customize the app appearance.',
+    'v1025beta.c3.tag': 'Custom',
+    'v1025beta.c4.title': 'Collaboration',
+    'v1025beta.c4.desc': 'Collaboration features after login: push progress, push to branches, view members, share links, powered by Supabase cloud sync.',
+    'v1025beta.c4.tag': 'Collaboration',
+    'modules.tag': '🧱 Block Modules', 'modules.title': '12 Feature Modules', 'modules.desc': 'Covering all aspects of programming',
+    'modules.names': ['Events','Motion','Looks','Control','Operators','Variables','Functions','OOP','Lists','Sound','3D','Sensing'],
+    'modules.counts': ['Entry Points · Messages','Move · Physics · Tracking','Costumes · Dialog · Visibility','Loops · Conditions · Delays','Math · Logic · Strings','Assignment · Increment · Type Cast','Define · Call · Return','Class · Inherit · Properties','Add · Remove · Iterate','Play · Stop · Volume','Mesh · Camera · Scene','Mouse · Keyboard · Collision'],
+    'modes.tag': '🎯 Three Modes', 'modes.title': 'For Everyone', 'modes.desc': 'Whether you are a beginner or an experienced developer',
+    'modes.c1.name': 'Beginner Mode', 'modes.c1.desc': 'Designed for beginners',
+    'modes.c1.f1': 'Simplified block categories', 'modes.c1.f2': 'Hidden advanced modules',
+    'modes.c1.f3': 'Category guidance tips', 'modes.c1.f4': 'Progressive learning curve',
+    'modes.c2.name': 'Normal Mode', 'modes.c2.desc': 'Complete creation experience',
+    'modes.c2.f1': 'All 100+ blocks', 'modes.c2.f2': 'Complete function system',
+    'modes.c2.f3': 'Code folding', 'modes.c2.f4': 'Block annotations',
+    'modes.c2.f5': 'Costume library', 'modes.c2.f6': 'HTML export',
+    'modes.c3.name': 'Developer Mode', 'modes.c3.desc': 'Professional debugging tools',
+    'modes.c3.f1': 'Breakpoints & step execution', 'modes.c3.f2': 'Real-time variable watch',
+    'modes.c3.f3': 'Execution flow highlighting', 'modes.c3.f4': 'Run to cursor', 'modes.c3.f5': 'Complete debug toolchain',
+    'tech.tag': '⚙️ Tech Stack', 'tech.title': 'Built on Modern Technology',
+    'tech.sysReq': '🖥️ System Requirements', 'tech.os': 'Operating System',
+    'tech.osVal': 'Windows 10+ / Linux x64 / macOS (Web)',
+    'tech.install': 'Installation', 'tech.installVal': 'Portable / Installer',
+    'download.tag': '📥 Download Now', 'download.title': 'Start Your Creative Journey',
+    'download.version': 'Version 1.0.25.beta · Released 2026',
+    'download.desc': 'Free download, no registration required. Supports Windows, Linux, and macOS (web version).',
+    'download.winReq': 'Windows 10 and above · x64',
+    'download.installer': 'Installer (.exe)', 'download.zip': 'Portable (.zip)',
+    'download.aliyun': 'Slow download? Try Aliyun Drive →',
+    'download.comingSoon': 'Coming Soon', 'download.linuxPending': 'Linux version is being prepared, stay tuned', 'download.linuxTar': 'Linux Archive (.tar.gz)', 'download.linuxReq': 'Requires libgtk-3 and libnss3',
+    'download.versions': '📜 Previous Versions',
+    'download.onlineEditor': '🌐 Online Editor (No Install)', 'download.community': '🌐 Community',
+    'download.guide': '📖 Blocks Usage Guide',
+    'ft.features': 'Features', 'ft.modules': 'Modules', 'ft.modes': 'Edit Modes', 'ft.download': 'Download',
+    'ft.copyright': '© 2026 Objector. Build unlimited creativity with blocks.'
+  }
+};
+
+function setLang(lang) {
+  document.documentElement.lang = lang;
+  localStorage.setItem('objector-lang', lang);
+  const t = i18n[lang];
+  if (!t) return;
+  // Update all data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key] !== undefined) {
+      if (key === 'hero.title') el.innerHTML = t[key];
+      else el.textContent = t[key];
+    }
+  });
+  // Module names and counts
+  const names = document.querySelectorAll('#modules .module-name');
+  const counts = document.querySelectorAll('#modules .module-count');
+  if (t['modules.names']) names.forEach((el, i) => { if (t['modules.names'][i]) el.textContent = t['modules.names'][i]; });
+  if (t['modules.counts']) counts.forEach((el, i) => { if (t['modules.counts'][i]) el.textContent = t['modules.counts'][i]; });
+  // Footer links
+  ['features','modules','modes','download'].forEach(k => {
+    const el = document.getElementById('ft-' + k);
+    if (el && t['ft.' + k]) el.textContent = t['ft.' + k];
+  });
+  const cp = document.getElementById('ft-copyright');
+  if (cp && t['ft.copyright']) cp.textContent = t['ft.copyright'];
+  // Update lang switcher buttons
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.trim() === (lang === 'en' ? 'EN' : '中文'));
+  });
+}
+
+// Initialize language
+setLang(localStorage.getItem('objector-lang') || 'zh-CN');
+</script>
+</body>
+</html>
