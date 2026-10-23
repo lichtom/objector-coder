@@ -41,6 +41,8 @@ contextBridge.exposeInMainWorld('api', {
   // JS 代码编辑器窗口
   openJsEditor: (data) => ipcRenderer.invoke('open-js-editor', data),
   onJsEditorCodeUpdated: (callback) => ipcRenderer.on('js-editor-code-updated', (_e, spriteIdx, code) => callback(spriteIdx, code)),
+  // 素材管理窗口
+  openAssetManager: (options) => ipcRenderer.invoke('open-asset-manager', options),
   // 右键菜单 / 命令行打开项目
   onOpenProjectFromArgs: (callback) => ipcRenderer.on('open-project-from-args', (_e, folderPath) => callback(folderPath)),
   // 解压 ZIP 项目

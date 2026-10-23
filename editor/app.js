@@ -461,6 +461,9 @@
         await openProject(folder);
       }
     });
+    document.getElementById('home-btn-assets')?.addEventListener('click', () => {
+      window.api.openAssetManager({});
+    });
 
     // ============ 设置对话框 ============
     const settingsDialog = document.getElementById('settings-dialog');

@@ -558,6 +558,12 @@
     return { ok: true };
   }
 
+  /** 打开素材管理器（Web 版不支持独立窗口） */
+  async function openAssetManager() {
+    alert('素材管理功能仅在桌面版中支持');
+    return { ok: false };
+  }
+
   /** 监听 JS 编辑器代码更新（Web 版 no-op） */
   function onJsEditorCodeUpdated() {}
 
@@ -584,7 +590,7 @@
     pathJoin,
     openExtensionDocs, openEditor,
     openCommunityLogin, openExternal,
-    openJsEditor, onJsEditorCodeUpdated, getEditorInit,
+    openJsEditor, openAssetManager, onJsEditorCodeUpdated, getEditorInit,
     windowMinimize, windowMaximize, windowClose,
     onLoadProject,
     // 代码运行（Web 版只支持 JS，其他语言提示需要桌面版）

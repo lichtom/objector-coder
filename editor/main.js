@@ -1061,6 +1061,36 @@ ipcMain.handle('open-cmd-window', async (_e) => {
   return true;
 });
 
+// ========== 素材管理窗口 ==========
+let assetManagerWin = null;
+
+ipcMain.handle('open-asset-manager', async (_e, options) => {
+  if (assetManagerWin && !assetManagerWin.isDestroyed()) {
+    assetManagerWin.focus();
+    return true;
+  }
+  const parentWin = BrowserWindow.fromWebContents(_e.sender);
+  assetManagerWin = new BrowserWindow({
+    width: 900,
+    height: 700,
+    minWidth: 700,
+    minHeight: 500,
+    title: '素材管理',
+    icon: APP_ICON,
+    backgroundColor: '#1e1e2e',
+    frame: false,
+    parent: parentWin || editorWindow || mainWindow,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+  assetManagerWin.loadFile(path.join(__dirname, 'asset-manager.html'));
+  assetManagerWin.on('closed', () => { assetManagerWin = null; });
+  return true;
+});
+
 // IPC: AI 流式聊天
 ipcMain.handle('ai-stream-chat', async (_e, messages, modelId) => {
   const allConfig = _getAIConfig();

@@ -2714,6 +2714,11 @@ window.EditorApp = (function () {
     document.getElementById('btn-run')?.addEventListener('click', _actionRun);
     document.getElementById('btn-stop')?.addEventListener('click', _actionStop);
 
+    // 素材管理按钮
+    document.getElementById('btn-asset-manager')?.addEventListener('click', () => {
+      window.api.openAssetManager({ projectPath: _projectPath });
+    });
+
     // AI 助手按钮
     document.getElementById('btn-ai-assistant')?.addEventListener('click', () => {
       if (typeof AIAssistant !== 'undefined') {

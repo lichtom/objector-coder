@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>Objector 素材管理</title>
+  <style>
+    :root {
+      --bg: #1e1e1e; --bg2: #252526; --surface: #2d2d2d; --hover: #2a2d2e;
+      --text: #cccccc; --text2: #969696; --muted: #6a6a6a;
+      --border: #3c3c3c; --accent: #007acc; --green: #4ec9b0;
+      --red: #f44747; --yellow: #dcdcaa; --mauve: #c586c0;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI','Microsoft YaHei',sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
+    #titlebar { height: 32px; background: var(--bg2); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); flex-shrink: 0; -webkit-app-region: drag; padding-left: 12px; }
+    #titlebar .title { font-size: 12px; font-weight: 600; color: var(--accent); }
+    #titlebar .controls { display: flex; -webkit-app-region: no-drag; }
+    #titlebar .controls button { width: 32px; height: 32px; border: none; background: transparent; color: var(--text2); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    #titlebar .controls button:hover { background: var(--hover); }
+    #titlebar .controls .close:hover { background: var(--red); color: #fff; }
+    #toolbar { height: 36px; background: var(--bg2); display: flex; align-items: center; padding: 0 10px; gap: 6px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .tb-btn { padding: 3px 10px; font-size: 11px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); color: var(--text2); cursor: pointer; transition: all .15s; display: inline-flex; align-items: center; gap: 4px; }
+    .tb-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .tb-btn.active { background: rgba(0,122,204,.15); border-color: var(--accent); color: var(--accent); }
+    .tb-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .tb-btn.primary:hover { background: #0587de; }
+    .tb-btn.danger:hover { border-color: var(--red); color: var(--red); }
+    .spacer { flex: 1; }
+    .tb-sep { width: 1px; height: 18px; background: var(--border); }
+    .status { font-size: 11px; color: var(--muted); }
+    .view { display: none; flex: 1; overflow: hidden; flex-direction: column; }
+    .view.active { display: flex; }
+    #view-home { padding: 20px; overflow-y: auto; }
+    .home-cards { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+    .home-card { flex: 1; min-width: 200px; padding: 32px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-align: center; cursor: pointer; transition: all .2s; }
+    .home-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,122,204,.15); }
+    .home-card .card-icon { font-size: 48px; margin-bottom: 12px; }
+    .home-card .card-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .home-card .card-desc { font-size: 12px; color: var(--text2); }
+    .home-section-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--text2); }
+    .asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+    .asset-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px; text-align: center; cursor: pointer; transition: all .15s; position: relative; }
+    .asset-item:hover { border-color: var(--accent); }
+    .asset-item.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+    .asset-item img { width: 80px; height: 80px; object-fit: contain; display: block; margin: 0 auto 6px; }
+    .asset-item .asset-name { font-size: 10px; color: var(--text2); word-break: break-all; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .asset-item .asset-badge { position: absolute; top: 4px; right: 4px; font-size: 9px; padding: 1px 5px; border-radius: 3px; background: var(--accent); color: #fff; }
+    .asset-empty { text-align: center; padding: 40px; color: var(--muted); font-size: 13px; }
+    #view-image { flex-direction: column; }
+    .img-toolbar { height: 36px; background: var(--bg2); display: flex; align-items: center; padding: 0 8px; gap: 4px; border-bottom: 1px solid var(--border); flex-shrink: 0; flex-wrap: wrap; }
+    .img-toolbar .tool-btn { width: 30px; height: 28px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); color: var(--text2); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+    .img-toolbar .tool-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .img-toolbar .tool-btn.active { background: rgba(0,122,204,.2); border-color: var(--accent); color: var(--accent); }
+    .img-toolbar input[type="color"] { width: 28px; height: 26px; border: 1px solid var(--border); border-radius: 4px; background: transparent; cursor: pointer; padding: 0; }
+    .img-toolbar input[type="range"] { width: 60px; height: 4px; accent-color: var(--accent); }
+    .img-toolbar label { font-size: 10px; color: var(--text2); }
+    .img-body { flex: 1; display: flex; overflow: hidden; }
+    .img-canvas-wrap { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #141414; position: relative; }
+    .img-canvas-wrap canvas { border: 1px solid var(--border); cursor: crosshair; image-rendering: pixelated; }
+    .img-canvas-info { position: absolute; bottom: 6px; right: 8px; font-size: 10px; color: var(--muted); }
+    #view-anim { flex-direction: column; }
+    .anim-toolbar { height: 36px; background: var(--bg2); display: flex; align-items: center; padding: 0 8px; gap: 6px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .anim-body { flex: 1; display: flex; overflow: hidden; }
+    .anim-frames { width: 220px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+    .anim-frames-header { padding: 8px; border-bottom: 1px solid var(--border); font-size: 11px; color: var(--text2); display: flex; justify-content: space-between; align-items: center; }
+    .anim-frames-list { flex: 1; overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 4px; }
+    .anim-frame-item { display: flex; align-items: center; gap: 6px; padding: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; transition: all .15s; }
+    .anim-frame-item:hover { border-color: var(--accent); }
+    .anim-frame-item.active { border-color: var(--accent); background: rgba(0,122,204,.1); }
+    .anim-frame-item.dragging { opacity: 0.5; }
+    .anim-frame-item img { width: 40px; height: 40px; object-fit: contain; border-radius: 3px; background: #141414; }
+    .anim-frame-item .frame-info { flex: 1; font-size: 10px; color: var(--text2); }
+    .anim-frame-item .frame-info .frame-name { font-size: 11px; color: var(--text); font-weight: 500; }
+    .anim-frame-item .frame-del { width: 20px; height: 20px; border: none; background: transparent; color: var(--muted); cursor: pointer; font-size: 12px; border-radius: 3px; display: flex; align-items: center; justify-content: center; }
+    .anim-frame-item .frame-del:hover { background: rgba(244,71,71,.15); color: var(--red); }
+    .anim-editor-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .anim-preview { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #141414; position: relative; }
+    .anim-preview canvas { border: 1px solid var(--border); }
+    .anim-preview .play-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 48px; color: rgba(255,255,255,.3); pointer-events: none; }
+    .anim-controls { height: 40px; background: var(--bg2); display: flex; align-items: center; padding: 0 10px; gap: 8px; border-top: 1px solid var(--border); }
+    .anim-controls label { font-size: 10px; color: var(--text2); }
+    .anim-controls input[type="number"] { width: 50px; padding: 2px 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 3px; color: var(--text); font-size: 11px; }
+    .dialog-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .dialog-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
+    .dialog-box h2 { font-size: 16px; margin-bottom: 12px; text-align: center; }
+    .dialog-box .project-item { padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 6px; cursor: pointer; transition: all .15s; }
+    .dialog-box .project-item:hover { border-color: var(--accent); }
+    .dialog-box .project-item .proj-name { font-size: 13px; font-weight: 500; }
+    .dialog-box .project-item .proj-path { font-size: 10px; color: var(--muted); margin-top: 2px; word-break: break-all; }
+    .dialog-box .btn-row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  </style>
+</head>
+<body>
+  <div id="titlebar">
+    <span class="title" id="window-title">📦 素材管理</span>
+    <div class="controls">
+      <button id="win-minimize" title="最小化">─</button>
+      <button id="win-maximize" title="最大化">□</button>
+      <button class="close" id="win-close" title="关闭">✕</button>
+    </div>
+  </div>
+  <div id="toolbar">
+    <button class="tb-btn" id="btn-back" style="display:none;">← 返回</button>
+    <span class="tb-sep" id="back-sep" style="display:none;"></span>
+    <span class="status" id="view-title">主页</span>
+    <div class="spacer"></div>
+    <button class="tb-btn" id="btn-save" style="display:none;">💾 保存</button>
+    <button class="tb-btn" id="btn-export" style="display:none;">📤 导出到项目</button>
+    <span class="status" id="status-text"></span>
+  </div>
+  <div id="view-home" class="view active">
+    <div class="home-cards">
+      <div class="home-card" id="card-image">
+        <div class="card-icon">🖼️</div>
+        <div class="card-title">图片</div>
+        <div class="card-desc">绘制或导入图片素材，支持画笔、形状、裁剪等</div>
+      </div>
+      <div class="home-card" id="card-anim">
+        <div class="card-icon">🎞️</div>
+        <div class="card-title">动图</div>
+        <div class="card-desc">创建帧动画，支持逐帧绘制、导入图片合成 GIF</div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <span class="home-section-title">素材库</span>
+      <div style="display:flex;gap:6px;">
+        <button class="tb-btn" id="btn-import-file">📂 导入文件</button>
+        <button class="tb-btn" id="btn-filter-all" style="font-size:10px;">全部</button>
+        <button class="tb-btn" id="btn-filter-img" style="font-size:10px;">图片</button>
+        <button class="tb-btn" id="btn-filter-gif" style="font-size:10px;">动图</button>
+      </div>
+    </div>
+    <div class="asset-grid" id="asset-grid"></div>
+    <div class="asset-empty" id="asset-empty">素材库为空，点击上方卡片创建新素材</div>
+  </div>
+  <div id="view-image" class="view">
+    <div class="img-toolbar">
+      <button class="tool-btn active" data-tool="brush" title="画笔">✏</button>
+      <button class="tool-btn" data-tool="eraser" title="橡皮擦">🧹</button>
+      <button class="tool-btn" data-tool="fill" title="填充">🪣</button>
+      <button class="tool-btn" data-tool="rect" title="矩形">▭</button>
+      <button class="tool-btn" data-tool="circle" title="圆形">○</button>
+      <button class="tool-btn" data-tool="text" title="文字">T</button>
+      <button class="tool-btn" data-tool="line" title="直线">╱</button>
+      <div class="tb-sep"></div>
+      <input type="color" id="img-color" value="#cccccc" title="颜色">
+      <label>粗细</label>
+      <input type="range" id="img-size" min="1" max="50" value="3">
+      <span id="img-size-label" style="font-size:10px;color:var(--text2);min-width:20px;">3</span>
+      <div class="tb-sep"></div>
+      <button class="tool-btn" id="img-undo" title="撤销">↩</button>
+      <button class="tool-btn" id="img-redo" title="重做">↪</button>
+      <button class="tool-btn" id="img-clear" title="清空画布">🗑</button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" id="img-import" style="font-size:10px;">📂 导入</button>
+      <label style="font-size:10px;">尺寸</label>
+      <input type="number" id="img-width" value="480" style="width:50px;padding:2px 4px;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--text);font-size:11px;">
+      <span style="font-size:10px;color:var(--text2);">×</span>
+      <input type="number" id="img-height" value="360" style="width:50px;padding:2px 4px;background:var(--surface);border:1px solid var(--border);border-radius:3px;color:var(--text);font-size:11px;">
+      <button class="tb-btn" id="img-resize" style="font-size:10px;">调整</button>
+    </div>
+    <div class="img-body">
+      <div class="img-canvas-wrap">
+        <canvas id="img-canvas" width="480" height="360"></canvas>
+        <div class="img-canvas-info" id="img-canvas-info">480 × 360</div>
+      </div>
+    </div>
+  </div>
+  <div id="view-anim" class="view">
+    <div class="anim-toolbar">
+      <button class="tb-btn" id="anim-add-frame">+ 帧</button>
+      <button class="tb-btn" id="anim-import-frame">📂 导入帧</button>
+      <button class="tb-btn" id="anim-new-blank">+ 空白帧</button>
+      <div class="tb-sep"></div>
+      <button class="tool-btn active" data-anim-tool="brush" title="画笔">✏</button>
+      <button class="tool-btn" data-anim-tool="eraser" title="橡皮擦">🧹</button>
+      <button class="tool-btn" data-anim-tool="fill" title="填充">🪣</button>
+      <div class="tb-sep"></div>
+      <input type="color" id="anim-color" value="#cccccc" title="颜色">
+      <label style="font-size:10px;">粗细</label>
+      <input type="range" id="anim-size" min="1" max="50" value="3">
+      <div class="tb-sep"></div>
+      <button class="tool-btn" id="anim-frame-undo" title="撤销">↩</button>
+      <button class="tool-btn" id="anim-frame-redo" title="重做">↪</button>
+      <button class="tool-btn" id="anim-frame-clear" title="清空当前帧">🗑</button>
+    </div>
+    <div class="anim-body">
+      <div class="anim-frames">
+        <div class="anim-frames-header">
+          <span>帧序列</span>
+          <span id="anim-frame-count">0 帧</span>
+        </div>
+        <div class="anim-frames-list" id="anim-frames-list"></div>
+      </div>
+      <div class="anim-editor-area">
+        <div class="anim-preview">
+          <canvas id="anim-canvas" width="480" height="360"></canvas>
+          <div class="play-overlay" id="anim-play-overlay">▶</div>
+        </div>
+        <div class="anim-controls">
+          <button class="tb-btn" id="anim-play">▶ 播放</button>
+          <button class="tb-btn" id="anim-stop">⏹ 停止</button>
+          <label>帧率</label>
+          <input type="number" id="anim-fps" value="10" min="1" max="60">
+          <label>帧时长(ms)</label>
+          <input type="number" id="anim-frame-duration" value="100" min="16" max="5000">
+          <div class="spacer"></div>
+          <label>循环</label>
+          <input type="checkbox" id="anim-loop" checked>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="asset-manager-app.js"></script>
+</body>
+</html>
