@@ -956,6 +956,28 @@ const Executor = (function () {
       }
     }
 
+    // === micro:bit 实时模式 ===
+    else if (typeof MicrobitBridge !== 'undefined' && MicrobitBridge.isConnected()) {
+      if (type === 'mb_led_on') await MicrobitBridge.ledOn();
+      else if (type === 'mb_led_off') await MicrobitBridge.ledOff();
+      else if (type === 'mb_led_pattern') await MicrobitBridge.ledPattern(String(p.pattern || ''));
+      else if (type === 'mb_led_pixel') await MicrobitBridge.ledPixel(Number(p.x), Number(p.y), Number(p.b));
+      else if (type === 'mb_text') await MicrobitBridge.text(String(p.text || ''));
+      else if (type === 'mb_show') await MicrobitBridge.show(String(p.char || ''));
+      else if (type === 'mb_buzz') await MicrobitBridge.buzz(Number(p.freq), Number(p.dur));
+      else if (type === 'mb_buzz_off') await MicrobitBridge.buzzOff();
+      else if (type === 'mb_servo') await MicrobitBridge.servo(String(p.pin), Number(p.angle));
+      else if (type === 'mb_servo_off') await MicrobitBridge.servoOff(String(p.pin));
+      else if (type === 'mb_motor') await MicrobitBridge.motor(String(p.which), Number(p.speed));
+      else if (type === 'mb_motor_brake') await MicrobitBridge.motorBrake();
+      else if (type === 'mb_rgb_init') await MicrobitBridge.rgbInit(String(p.pin), Number(p.count));
+      else if (type === 'mb_rgb') await MicrobitBridge.rgb(Number(p.r), Number(p.g), Number(p.b));
+      else if (type === 'mb_rgb_one') await MicrobitBridge.rgbOne(Number(p.idx), Number(p.r), Number(p.g), Number(p.b));
+      else if (type === 'mb_rgb_off') await MicrobitBridge.rgbOff();
+      else if (type === 'mb_pin_write') await MicrobitBridge.pinWrite(String(p.pin), Number(p.val));
+      else if (type === 'mb_wait') await new Promise(r => setTimeout(r, Number(p.ms) || 1000));
+    }
+
     await delay(1);
   }
 
@@ -1430,6 +1452,75 @@ const Executor = (function () {
           return node ? node.type : '';
         }
         return '';
+      }
+
+      // === micro:bit 传感器报告器 ===
+      case 'mb_temp': {
+        if (typeof MicrobitBridge !== 'undefined' && MicrobitBridge.isConnected()) {
+          const v = await MicrobitBridge.getTemp();
+          return v !== null ? Number(v) : 0;
+        }
+        return 0;
+      }
+      case 'mb_light': {
+        if (typeof MicrobitBridge !== 'undefined' && MicrobitBridge.isConnected()) {
+          const v = await MicrobitBridge.getLight();
+          return v !== null ? Number(v) : 0;
+        }
+        return 0;
+      }
+      case 'mb_acc_x': {
+        if (typeof MicrobitBridge !== 'undefined' && MicrobitBridge.isConnected()) {
+          const v = await MicrobitBridge.query('ACX');
+          return v !== null ? Number(v) : 0;
+        }
+        return 0;
+      }
+      case 'mb_acc_y': {
+        if (typeof MicrobitBridge !== 'undefined' && MicrobitBridge.isConnected()) {
+          const v = await MicrobitBridge.query('ACY');
+          return v !== null ? Number(v) : 0;
+        }
+        return 0;
+      }
+      case 'mb_acc_z': {
+        if (typeof MicrobitBridge !== 'undefined' && MicrobitBridge.isConnected()) {
+          const v = await MicrobitBridge.query('ACZ');
+          return v !== null ? Number(v) : 0;
+        }
+        return 0;
+      }
+      case 'mb_gesture': {
+        if (typeof MicrobitBridge !== 'undefined' && MicrobitBridge.isConnected()) {
+          return await MicrobitBridge.getGesture() || '';
+        }
+        return '';
+      }
+      case 'mb_sound': {
+        if (typeof MicrobitBridge !== 'undefined' && MicrobitBridge.isConnected()) {
+          const v = await MicrobitBridge.getSound();
+          return v !== null ? Number(v) : 0;
+        }
+        return 0;
+      }
+      case 'mb_button': {
+        if (typeof MicrobitBridge !== 'undefined' && MicrobitBridge.isConnected()) {
+          const v = await MicrobitBridge.getButton();
+          if (v !== null) {
+            // BT 返回 "0,1" 格式: 第一个是 button_a, 第二个是 button_b
+            const parts = String(v).split(',');
+            const idx = (p.btn === 'B') ? 1 : 0;
+            return parseInt(parts[idx]) === 1;
+          }
+        }
+        return false;
+      }
+      case 'mb_pin_read': {
+        if (typeof MicrobitBridge !== 'undefined' && MicrobitBridge.isConnected()) {
+          const v = await MicrobitBridge.pinRead(String(p.pin));
+          return v !== null ? Number(v) : 0;
+        }
+        return 0;
       }
 
       default: {

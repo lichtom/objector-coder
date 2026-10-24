@@ -9,6 +9,10 @@ const Palette = (function () {
   function init() {
     const catContainer = document.getElementById('palette-categories');
     const blocksContainer = document.getElementById('palette-blocks');
+    if (!catContainer || !blocksContainer) {
+      console.warn('[Palette.init] DOM elements missing!');
+      return;
+    }
 
     // 清空旧内容，避免重复
     catContainer.innerHTML = '';
@@ -16,17 +20,32 @@ const Palette = (function () {
 
     // 渲染分类按钮
     const allCats = BlockRegistry.getCategories();
+    console.log('[Palette.init] projectMode:', (typeof EditorState !== 'undefined' ? EditorState.projectMode : 'N/A'), 'totalCats:', allCats.length, 'hasMicrobit:', allCats.some(c=>c.id==='microbit'));
     let filteredCats = (typeof DevMode !== 'undefined') ? DevMode.filterCategories(allCats) : allCats;
     
     // Minecraft 模式过滤：只在 Minecraft 模式下显示 minecraft 分类
     const isMinecraftMode = typeof EditorState !== 'undefined' && EditorState.projectMode === 'minecraft';
     // 高级模式过滤：只在高级模式下显示 scene 分类
     const isAdvancedMode = typeof EditorState !== 'undefined' && EditorState.projectMode === 'advanced';
+    // microbit 模式过滤
+    const isMicrobitMode = typeof EditorState !== 'undefined' && EditorState.projectMode && EditorState.projectMode.startsWith('microbit');
+    const isMicrobitUpload = typeof EditorState !== 'undefined' && EditorState.projectMode === 'microbit-upload';
     filteredCats = filteredCats.filter(cat => {
       if (cat.id === 'minecraft') return isMinecraftMode;
       if (cat.id === 'scene') return isAdvancedMode;
+      if (cat.id === 'microbit') return isMicrobitMode;
+      // 上传模式: 只保留 control/operators/variables/functions/oop/lists/microbit
+      if (isMicrobitUpload) {
+        return ['control','operators','variables','functions','oop','lists','microbit'].includes(cat.id);
+      }
       return true;
     });
+
+    console.log('[Palette.init] filteredCats:', filteredCats.map(c=>c.id).join(','));
+    // 如果当前分类被过滤掉了，切换到第一个可用分类
+    if (filteredCats.length > 0 && !filteredCats.find(c => c.id === currentCategory)) {
+      currentCategory = filteredCats[0].id;
+    }
     
     filteredCats.forEach(cat => {
       const btn = document.createElement('button');

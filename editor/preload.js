@@ -91,6 +91,15 @@ contextBridge.exposeInMainWorld('api', {
   onAIRequestBlocks: (callback) => ipcRenderer.on('ai-request-blocks', () => callback()),
   aiBlocksResponse: (blocks) => ipcRenderer.send('ai-blocks-response', blocks),
 
+  // ========== micro:bit 串口 ==========
+  microbitListPorts: () => ipcRenderer.invoke('microbit-list-ports'),
+  microbitConnect: (port) => ipcRenderer.invoke('microbit-connect', port),
+  microbitSend: (cmd) => ipcRenderer.invoke('microbit-send', cmd),
+  microbitDisconnect: () => ipcRenderer.invoke('microbit-disconnect'),
+  microbitFlash: (hexPath) => ipcRenderer.invoke('microbit-flash', hexPath),
+  microbitFlashMain: () => ipcRenderer.invoke('microbit-flash-main'),
+  microbitCompileFlash: (pyCode) => ipcRenderer.invoke('microbit-compile-flash', pyCode),
+
   // ========== 独立面板窗口 ==========
   openPanels: () => ipcRenderer.invoke('open-panels'),
   closePanels: () => ipcRenderer.invoke('close-panels'),

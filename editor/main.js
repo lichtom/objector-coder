@@ -1,9 +1,68 @@
 const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const { execFile, spawn } = require('child_process');
 
 if (require('electron-squirrel-startup')) app.quit();
+
+// ========== 跨平台辅助函数 ==========
+
+/** 查找 micro:bit USB 驱动器 (Windows A-Z:, Linux /media/mnt, macOS /Volumes) */
+function _findMicrobitDrives() {
+  const drives = [];
+  if (process.platform === 'win32') {
+    for (let c = 65; c <= 90; c++) {
+      const d = String.fromCharCode(c) + ':\\';
+      try {
+        const stats = fs.statSync(d);
+        if (stats.isDirectory()) {
+          try {
+            const volLabel = fs.readFileSync(d + 'DETAILS.TXT', 'utf-8');
+            if (volLabel && /micro/i.test(volLabel)) drives.push(d);
+          } catch(e) {}
+        }
+      } catch(e) {}
+    }
+  } else {
+    // Linux / macOS: 扫描常见挂载点
+    const home = os.homedir();
+    const candidates = [];
+    if (process.platform === 'darwin') {
+      candidates.push('/Volumes');
+    } else {
+      // Linux
+      candidates.push('/media', '/mnt', '/run/media');
+      // /run/media/<username>
+      try {
+        const mediaUser = path.join('/run/media', os.userInfo().username);
+        if (fs.existsSync(mediaUser)) candidates.push(mediaUser);
+      } catch {}
+      // ~/media
+      try {
+        const userMedia = path.join(home, 'media');
+        if (fs.existsSync(userMedia)) candidates.push(userMedia);
+      } catch {}
+    }
+    for (const base of candidates) {
+      try {
+        const entries = fs.readdirSync(base, { withFileTypes: true });
+        for (const entry of entries) {
+          if (!entry.isDirectory()) continue;
+          const drivePath = path.join(base, entry.name);
+          try {
+            const detailsFile = path.join(drivePath, 'DETAILS.TXT');
+            if (fs.existsSync(detailsFile)) {
+              const volLabel = fs.readFileSync(detailsFile, 'utf-8');
+              if (volLabel && /micro/i.test(volLabel)) drives.push(drivePath + path.sep);
+            }
+          } catch(e) {}
+        }
+      } catch(e) {}
+    }
+  }
+  return drives;
+}
 
 const APP_ICON = path.join(__dirname, '..', 'Objector2.png');
 
@@ -661,7 +720,7 @@ ipcMain.handle('extract-zip-project', async (_e, zipPath) => {
     return destDir;
   } catch (err) {
     console.error('[extract-zip-project]', err.message);
-    // 回退：使用 PowerShell 解压
+    // 回退：使用系统命令解压
     try {
       const { execSync } = require('child_process');
       const tmpBase = path.join(app.getPath('temp'), 'ObjectorProjects');
@@ -669,7 +728,14 @@ ipcMain.handle('extract-zip-project', async (_e, zipPath) => {
       const baseName = path.basename(zipPath, '.zip');
       const destDir = path.join(tmpBase, baseName);
       if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
-      execSync(`powershell -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${destDir}' -Force"`);
+      
+      if (process.platform === 'win32') {
+        execSync(`powershell -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${destDir}' -Force"`);
+      } else {
+        // Linux / macOS: 使用 unzip 命令
+        execSync(`unzip -o "${zipPath}" -d "${destDir}"`);
+      }
+      
       // 检查子目录
       const subDirs = fs.readdirSync(destDir, { withFileTypes: true }).filter(e => e.isDirectory());
       if (subDirs.length === 1 && fs.existsSync(path.join(destDir, subDirs[0].name, 'project.json'))) {
@@ -777,14 +843,24 @@ ${code}
   if (lang === 'python') {
     const pythonPaths = [
       'python', 'python3', 'py',
-      'C:\\Python39\\python.exe', 'C:\\Python310\\python.exe', 'C:\\Python311\\python.exe',
-      'C:\\Python312\\python.exe', 'C:\\Python313\\python.exe',
-      path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python39', 'python.exe'),
-      path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python310', 'python.exe'),
-      path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python311', 'python.exe'),
-      path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python312', 'python.exe'),
-      path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python313', 'python.exe'),
     ];
+    if (process.platform === 'win32') {
+      pythonPaths.push(
+        'C:\\Python39\\python.exe', 'C:\\Python310\\python.exe', 'C:\\Python311\\python.exe',
+        'C:\\Python312\\python.exe', 'C:\\Python313\\python.exe',
+        path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python39', 'python.exe'),
+        path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python310', 'python.exe'),
+        path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python311', 'python.exe'),
+        path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python312', 'python.exe'),
+        path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python313', 'python.exe'),
+      );
+    } else {
+      // Linux / macOS
+      pythonPaths.push(
+        '/usr/bin/python3', '/usr/local/bin/python3',
+        '/usr/bin/python', '/usr/local/bin/python',
+      );
+    }
     let pythonExe = null;
     for (const p of pythonPaths) {
       try {
@@ -817,12 +893,22 @@ ${code}
   if (lang === 'cpp') {
     const gppPaths = [
       'g++',
-      'C:\\msys64\\ucrt64\\bin\\g++.exe',
-      'C:\\msys64\\mingw64\\bin\\g++.exe',
-      'C:\\mingw64\\bin\\g++.exe',
-      'C:\\MinGW\\bin\\g++.exe',
-      'C:\\TDM-GCC-64\\bin\\g++.exe',
     ];
+    if (process.platform === 'win32') {
+      gppPaths.push(
+        'C:\\msys64\\ucrt64\\bin\\g++.exe',
+        'C:\\msys64\\mingw64\\bin\\g++.exe',
+        'C:\\mingw64\\bin\\g++.exe',
+        'C:\\MinGW\\bin\\g++.exe',
+        'C:\\TDM-GCC-64\\bin\\g++.exe',
+      );
+    } else {
+      // Linux / macOS
+      gppPaths.push(
+        '/usr/bin/g++', '/usr/local/bin/g++',
+        '/usr/bin/c++', '/usr/local/bin/c++',
+      );
+    }
     let gppExe = null;
     for (const p of gppPaths) {
       try {
@@ -836,7 +922,10 @@ ${code}
     }
     if (!gppExe) {
       if (_codeSender && !_codeSender.isDestroyed()) {
-        _codeSender.send('code-output', '❌ 未找到 C++ 编译器 (g++)。\n\n请安装 MinGW-w64: https://www.mingw-w64.org/\n或确认 g++ 已添加到 PATH 环境变量。', 'stderr');
+        const installHint = process.platform === 'win32'
+          ? '请安装 MinGW-w64: https://www.mingw-w64.org/'
+          : '请运行: sudo apt install g++ (Debian/Ubuntu) 或 sudo dnf install gcc-c++ (Fedora)';
+        _codeSender.send('code-output', '❌ 未找到 C++ 编译器 (g++)。\n\n' + installHint + '\n或确认 g++ 已添加到 PATH 环境变量。', 'stderr');
         _codeSender.send('code-done', 1);
       }
       return { error: true, message: 'g++ not found' };
@@ -887,6 +976,153 @@ ipcMain.handle('stop-code', async () => {
     return { stopped: true };
   }
   return { stopped: false };
+});
+
+// ========== micro:bit 串口通信 ==========
+const { SerialPort } = (() => { try { return require('serialport'); } catch(e) { return { SerialPort: null }; } })();
+let _mbPort = null;
+let _mbDataBuf = '';
+
+ipcMain.handle('microbit-list-ports', async () => {
+  if (!SerialPort) return [];
+  try { return await SerialPort.list(); } catch(e) { return []; }
+});
+
+ipcMain.handle('microbit-connect', async (_e, portPath) => {
+  if (!SerialPort) return { ok: false, error: 'serialport module not available' };
+  return new Promise((resolve) => {
+    if (_mbPort) { try { _mbPort.close(); } catch(e) {} _mbPort = null; }
+    try {
+      _mbPort = new SerialPort({ path: portPath, baudRate: 115200 }, (err) => {
+        if (err) { _mbPort = null; return resolve({ ok: false, error: err.message }); }
+        _mbDataBuf = '';
+        _mbPort.on('data', (data) => { _mbDataBuf += data.toString(); });
+        _mbPort.on('error', () => { _mbPort = null; });
+        _mbPort.on('close', () => { _mbPort = null; });
+        resolve({ ok: true });
+      });
+    } catch(e) { _mbPort = null; resolve({ ok: false, error: e.message }); }
+  });
+});
+
+ipcMain.handle('microbit-send', async (_e, cmd) => {
+  if (!_mbPort || !_mbPort.isOpen) return { ok: false, error: 'Port not open' };
+  return new Promise((resolve) => {
+    _mbDataBuf = '';
+    _mbPort.write(cmd + '\n', (err) => {
+      if (err) return resolve({ ok: false, error: err.message });
+      // 等待响应（最多 2 秒）
+      let elapsed = 0;
+      const timer = setInterval(() => {
+        elapsed += 50;
+        if (_mbDataBuf.includes('\n')) {
+          clearInterval(timer);
+          const lines = _mbDataBuf.split('\n').filter(l => l.trim());
+          resolve({ ok: true, response: lines[lines.length - 1] || '' });
+        } else if (elapsed >= 2000) {
+          clearInterval(timer);
+          resolve({ ok: true, response: _mbDataBuf.trim() || 'TIMEOUT' });
+        }
+      }, 50);
+    });
+  });
+});
+
+ipcMain.handle('microbit-disconnect', async () => {
+  if (_mbPort) { try { _mbPort.close(); } catch(e) {} _mbPort = null; }
+  return { ok: true };
+});
+
+ipcMain.handle('microbit-flash', async (_e, hexPath) => {
+  // 拖拽烧录：复制 combined hex 到 micro:bit USB 驱动器
+  try {
+    const drives = _findMicrobitDrives();
+    if (drives.length === 0) {
+      return { ok: false, error: 'micro:bit USB 驱动器未找到。请通过 USB 连接 micro:bit。' };
+    }
+    const dest = path.join(drives[0], 'firmware.hex');
+    fs.copyFileSync(hexPath, dest);
+    return { ok: true, path: dest };
+  } catch(e) {
+    return { ok: false, error: e.message };
+  }
+});
+
+// IPC: 烧录实时模式固件 main.hex 到 micro:bit
+ipcMain.handle('microbit-flash-main', async () => {
+  try {
+    const fwDir = path.join(__dirname, '..', 'microbit-firmware');
+    const mainHex = path.join(fwDir, 'main.hex');
+    
+    if (!fs.existsSync(mainHex)) {
+      return { ok: false, error: '实时模式固件不存在: ' + mainHex };
+    }
+    
+    // 查找 micro:bit USB 驱动器 (跨平台)
+    const drives = _findMicrobitDrives();
+    
+    if (drives.length === 0) {
+      return { ok: false, error: 'micro:bit USB 驱动器未找到。请通过 USB 连接 micro:bit。' };
+    }
+    
+    const dest = path.join(drives[0], 'firmware.hex');
+    fs.copyFileSync(mainHex, dest);
+    return { ok: true, path: dest };
+  } catch(e) {
+    return { ok: false, error: e.message };
+  }
+});
+
+// IPC: microbit 编译并合并 hex (预编译固件 + makecombinedhex.py)
+ipcMain.handle('microbit-compile-flash', async (_e, pyCode) => {
+  try {
+    const { execSync } = require('child_process');
+    
+    // 固件和脚本路径
+    const fwDir = path.join(__dirname, '..', 'microbit-firmware');
+    const fwHex = path.join(fwDir, 'micropython-microbit-v2.1.1.hex');
+    const combineScript = path.join(fwDir, 'makecombinedhex.py');
+    
+    // 临时文件
+    const tmpDir = path.join(os.tmpdir(), 'objector-microbit');
+    try { fs.mkdirSync(tmpDir, { recursive: true }); } catch(e) {}
+    const tmpPy = path.join(tmpDir, 'main.py');
+    const tmpHex = path.join(tmpDir, 'combined.hex');
+    
+    // 写入 Python 代码
+    fs.writeFileSync(tmpPy, pyCode, 'utf-8');
+    
+    // 检查固件文件
+    if (!fs.existsSync(fwHex)) {
+      return { ok: false, error: '预编译固件文件不存在: ' + fwHex };
+    }
+    
+    // 跨平台: python vs python3
+    const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+    
+    // 运行 makecombinedhex.py
+    const cmd = `${pythonCmd} "${combineScript}" "${fwHex}" "${tmpPy}" "${tmpHex}"`;
+    execSync(cmd, { timeout: 30000, encoding: 'utf-8' });
+    
+    // 检查输出
+    if (!fs.existsSync(tmpHex)) {
+      return { ok: false, error: '合并 hex 生成失败' };
+    }
+    
+    // 查找 micro:bit USB 驱动器 (跨平台)
+    const drives = _findMicrobitDrives();
+    
+    if (drives.length > 0) {
+      const dest = path.join(drives[0], 'firmware.hex');
+      fs.copyFileSync(tmpHex, dest);
+      return { ok: true, path: dest, combinedHex: tmpHex };
+    }
+    
+    // 未找到驱动器，返回 hex 路径让用户手动拖拽
+    return { ok: true, path: null, combinedHex: tmpHex, message: '已生成合并 hex，但未找到 micro:bit USB 驱动器。请手动复制文件到 micro:bit。' };
+  } catch(e) {
+    return { ok: false, error: '编译烧录失败: ' + e.message };
+  }
 });
 
 // IPC: 打开 JS 代码编辑器窗口（非模态，独立窗口）

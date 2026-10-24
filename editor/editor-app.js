@@ -1378,6 +1378,273 @@ window.EditorApp = (function () {
     console.log('[Minecraft 模组模式] 已初始化');
   }
 
+  /** 初始化 microbit 硬件模式 */
+  let _microbitInited = false;
+  let _pythonRefreshTimer = null;
+  function initMicrobitMode(mode) {
+    const subMode = (mode || EditorState.projectMode || '').replace('microbit-', ''); // 'realtime' | 'upload'
+    console.log('[microbit] 初始化开始, subMode:', subMode, 'projectMode:', EditorState.projectMode, '已初始化:', _microbitInited);
+  
+    // 确认 projectMode 已设置
+    if (!EditorState.projectMode || !EditorState.projectMode.startsWith('microbit')) {
+      console.warn('[microbit] projectMode 未设置或不是 microbit:', EditorState.projectMode);
+    }
+  
+    // 多次延迟刷新 Palette，确保不被其他模块覆盖
+    const refreshPalette = (delay, label) => {
+      setTimeout(() => {
+        if (typeof Palette !== 'undefined') {
+          try {
+            Palette.init();
+            console.log('[microbit] Palette刷新[' + label + '] 成功, projectMode:', EditorState.projectMode);
+          } catch(e) {
+            console.warn('[microbit] Palette刷新[' + label + '] 失败:', e);
+          }
+        }
+      }, delay);
+    };
+    refreshPalette(0, 'immediate');
+    refreshPalette(200, '200ms');
+    refreshPalette(600, '600ms');
+    refreshPalette(1500, '1500ms');
+  
+    // 添加配对设备按钮（两种模式都有）
+    _addMicrobitPairBtn(subMode === 'realtime');
+  
+    if (subMode === 'upload') {
+      // 上传模式: 隐藏运行/停止按钮
+      const btnRun = document.getElementById('btn-run');
+      const btnStop = document.getElementById('btn-stop');
+      if (btnRun) btnRun.style.display = 'none';
+      if (btnStop) btnStop.style.display = 'none';
+      
+      // 上传模式: 隐藏角色/音频栏，显示 Python 代码栏
+      const spriteSection = document.getElementById('sprite-section');
+      const audioSection = document.getElementById('audio-section');
+      const codeSection = document.getElementById('microbit-code-section');
+      if (spriteSection) spriteSection.style.display = 'none';
+      if (audioSection) audioSection.style.display = 'none';
+      if (codeSection) codeSection.classList.remove('hidden');
+      
+      // 绑定刷新/复制按钮
+      const refreshBtn = document.getElementById('btn-refresh-python');
+      const copyBtn = document.getElementById('btn-copy-python');
+      if (refreshBtn && !refreshBtn._bound) {
+        refreshBtn._bound = true;
+        refreshBtn.addEventListener('click', _refreshPythonCode);
+      }
+      if (copyBtn && !copyBtn._bound) {
+        copyBtn._bound = true;
+        copyBtn.addEventListener('click', () => {
+          const output = document.getElementById('microbit-python-output');
+          if (output) {
+            output.select();
+            document.execCommand('copy');
+            copyBtn.textContent = '✓';
+            setTimeout(() => { copyBtn.textContent = '📋'; }, 1000);
+          }
+        });
+      }
+      
+      // 自动刷新 Python 代码
+      _refreshPythonCode();
+      _setupAutoRefreshPython();
+      
+      // 上传模式额外添加“编译并烧录”按钮
+      _addMicrobitFlashBtn();
+    }
+  
+    _microbitInited = true;
+    console.log('[microbit] 初始化完成');
+  }
+
+  /** 刷新 Python 代码显示 */
+  function _refreshPythonCode() {
+    const output = document.getElementById('microbit-python-output');
+    if (!output) return;
+    try {
+      const blocks = EditorState.blocks || {};
+      if (typeof MicrobitCompiler !== 'undefined') {
+        const code = MicrobitCompiler.compile(blocks);
+        output.value = code;
+      } else {
+        output.value = '# MicrobitCompiler 未加载\n';
+      }
+    } catch(e) {
+      output.value = '# 编译错误: ' + e.message;
+    }
+  }
+
+  /** 设置积木变化时自动刷新 Python 代码 */
+  function _setupAutoRefreshPython() {
+    // 清除旧定时器
+    if (_pythonRefreshTimer) clearInterval(_pythonRefreshTimer);
+    // 监听积木变化，延迟刷新
+    const _scheduleRefresh = () => {
+      if (_pythonRefreshTimer) clearTimeout(_pythonRefreshTimer);
+      _pythonRefreshTimer = setTimeout(_refreshPythonCode, 500);
+    };
+    // 监听编辑器画布的 DOM 变化
+    const editorPanel = document.getElementById('editor-panel');
+    if (editorPanel) {
+      const observer = new MutationObserver(_scheduleRefresh);
+      observer.observe(editorPanel, { childList: true, subtree: true, attributes: true });
+    }
+    // 备用: 定时刷新 (2秒)
+    setInterval(_refreshPythonCode, 2000);
+  }
+  
+  /** 在工具栏添加配对设备按钮（实时模式+上传模式都有） */
+  function _addMicrobitPairBtn(isRealtime) {
+    // 防止重复添加
+    let btn = document.getElementById('mb-pair-btn');
+    if (btn) btn.remove();
+    btn = document.createElement('button');
+    btn.id = 'mb-pair-btn';
+    btn.className = 'tb-btn';
+    btn.style.cssText = 'margin-left:8px;font-size:12px;';
+  
+    const _updateBtn = (connected) => {
+      if (connected) {
+        btn.textContent = '🔗 micro:bit 已连接';
+        btn.title = '点击断开连接';
+        btn.style.background = 'var(--green, #a6e3a1)';
+        btn.style.color = '#1e1e2e';
+        btn.onclick = () => {
+          if (typeof MicrobitBridge !== 'undefined') {
+            MicrobitBridge.disconnect();
+            _updateBtn(false);
+          }
+        };
+      } else {
+        btn.textContent = '🔌 配对设备';
+        btn.title = '连接 micro:bit 设备';
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.onclick = () => {
+          if (typeof MicrobitBridge !== 'undefined') {
+            MicrobitBridge.showConnectDialog(async () => {
+              _updateBtn(true);
+              // 实时模式：配对成功后烧录 main.hex
+              if (isRealtime) {
+                console.log('[microbit] 实时模式手动配对成功, 烧录 main.hex...');
+                try {
+                  const flashResult = await MicrobitBridge.flashMainHex();
+                  if (flashResult.ok) {
+                    console.log('[microbit] 实时固件烧录成功:', flashResult.path);
+                  } else {
+                    console.warn('[microbit] 实时固件烧录失败:', flashResult.error);
+                    alert('⚠️ 串口连接成功，但固件烧录失败:\n' + (flashResult.error || '未知错误'));
+                  }
+                } catch (e) {
+                  console.warn('[microbit] 烧录固件异常:', e);
+                }
+              }
+            });
+          }
+        };
+      }
+    };
+  
+    // 如果是实时模式且已连接，显示已连接状态
+    if (isRealtime && typeof MicrobitBridge !== 'undefined' && MicrobitBridge.isConnected()) {
+      _updateBtn(true);
+    } else {
+      _updateBtn(false);
+    }
+  
+    const toolbar = document.getElementById('toolbar') || document.querySelector('.toolbar');
+    if (toolbar) {
+      toolbar.appendChild(btn);
+      console.log('[microbit] 配对按钮已添加到工具栏');
+    } else {
+      console.warn('[microbit] 未找到工具栏元素，尝试延迟添加...');
+      setTimeout(() => {
+        const tb = document.getElementById('toolbar') || document.querySelector('.toolbar');
+        if (tb) { tb.appendChild(btn); console.log('[microbit] 配对按钮延迟添加成功'); }
+        else console.error('[microbit] 工具栏不存在！');
+      }, 500);
+    }
+
+    // 实时模式：自动弹出连接对话框
+    if (isRealtime && typeof MicrobitBridge !== 'undefined' && !MicrobitBridge.isConnected()) {
+      setTimeout(() => {
+        MicrobitBridge.showConnectDialog(async () => {
+          _updateBtn(true);
+          console.log('[microbit] 实时模式已连接, 开始烧录 main.hex 固件...');
+          // 配对成功后自动烧录实时模式固件
+          try {
+            const flashResult = await MicrobitBridge.flashMainHex();
+            if (flashResult.ok) {
+              console.log('[microbit] 实时固件烧录成功:', flashResult.path);
+            } else {
+              console.warn('[microbit] 实时固件烧录失败:', flashResult.error);
+              alert('⚠️ 串口连接成功，但固件烧录失败:\n' + (flashResult.error || '未知错误') + '\n\n请确保 micro:bit 已通过 USB 连接，并检查 micro:bit 是否显示为 USB 驱动器。');
+            }
+          } catch (e) {
+            console.warn('[microbit] 烧录固件异常:', e);
+          }
+        });
+      }, 500);
+    }
+  }
+
+  /** 在工具栏添加“编译并烧录”按钮 */
+  function _addMicrobitFlashBtn() {
+    let btn = document.getElementById('mb-flash-btn');
+    if (btn) return;
+    btn = document.createElement('button');
+    btn.id = 'mb-flash-btn';
+    btn.className = 'tb-btn tb-run';
+    btn.style.cssText = 'margin-left:8px;font-size:12px;';
+    btn.textContent = '📥 编译并烧录';
+    btn.title = '将积木编译为 MicroPython，合并到预编译固件，烧录到 micro:bit';
+    btn.onclick = async () => {
+      if (typeof MicrobitCompiler === 'undefined' || typeof MicrobitBridge === 'undefined') {
+        alert('microbit 模块未加载'); return;
+      }
+      btn.textContent = '⏳ 编译中...';
+      btn.disabled = true;
+      try {
+        const blocks = EditorState.blocks || {};
+        const pyCode = MicrobitCompiler.compile(blocks);
+        console.log('[microbit] 编译 MicroPython 代码:\n', pyCode);
+
+        // 更新 Python 代码面板
+        const output = document.getElementById('microbit-python-output');
+        if (output) output.value = pyCode;
+
+        // 通过新 API: 编译 + 合并 + 拖拽烧录
+        btn.textContent = '⏳ 合并固件...';
+        const result = await MicrobitBridge.compileAndFlash(pyCode);
+        
+        if (result.ok) {
+          if (result.path) {
+            alert('✅ 烧录成功！\n\n已复制到: ' + result.path);
+          } else if (result.combinedHex) {
+            alert('✅ 编译成功！\n\n合并 hex 已保存到:\n' + result.combinedHex + '\n\n' + (result.message || '请手动复制到 micro:bit USB 驱动器。'));
+          }
+        } else {
+          alert('❌ 烧录失败: ' + (result.error || '未知错误'));
+        }
+      } catch(e) {
+        alert('编译烧录失败: ' + e.message);
+      }
+      btn.textContent = '📥 编译并烧录';
+      btn.disabled = false;
+    };
+    const toolbar = document.getElementById('toolbar') || document.querySelector('.toolbar');
+    if (toolbar) {
+      toolbar.appendChild(btn);
+      console.log('[microbit] 烧录按钮已添加到工具栏');
+    } else {
+      setTimeout(() => {
+        const tb = document.getElementById('toolbar') || document.querySelector('.toolbar');
+        if (tb) tb.appendChild(btn);
+      }, 500);
+    }
+  }
+
   /** 初始化代码编程模式 */
   let _codeEditor = null;
   let _codeModeInitialized = false;
@@ -1892,13 +2159,32 @@ window.EditorApp = (function () {
       initMinecraftMode();
     }
 
+    // microbit 硬件模式初始化（在 loadProject 之后执行，因为 projectMode 在 loadProject 中设置）
+
     // 代码编程模式初始化
     if (projectMode && projectMode.startsWith('code-')) {
       initCodeMode(projectMode);
     }
 
     if (projectPath) {
-      loadProject(projectPath, projectMode);
+      await loadProject(projectPath, projectMode);
+    } else if (projectMode && projectMode !== 'normal') {
+      // 无 projectPath 但有 projectMode，手动设置
+      console.log('[init] 无 projectPath，手动设置 projectMode:', projectMode);
+      EditorState.projectMode = projectMode;
+    }
+
+    // 安全回退: 确保 microbit 模式初始化（防止 loadProject 中某步异常导致跳过）
+    if (typeof EditorState !== 'undefined' && EditorState.projectMode && EditorState.projectMode.startsWith('microbit')) {
+      if (!_microbitInited) {
+        console.log('[microbit] 安全回退: initMicrobitMode 未被 loadProject 调用，在此执行');
+      }
+      try { initMicrobitMode(EditorState.projectMode); } catch(e) { console.warn('[microbit] 安全回退初始化失败:', e); }
+    } else if (projectMode && projectMode.startsWith('microbit')) {
+      // projectMode 参数是 microbit 但 EditorState.projectMode 没有设置
+      console.warn('[microbit] 警告: projectMode参数为', projectMode, '但 EditorState.projectMode 为', EditorState.projectMode, '，强制设置');
+      EditorState.projectMode = projectMode;
+      try { initMicrobitMode(projectMode); } catch(e) { console.warn('[microbit] 强制初始化失败:', e); }
     }
 
     // 社区作品在线预览：通过项目 ID 从社区 API 加载
@@ -3430,6 +3716,14 @@ window.EditorApp = (function () {
       }
     }
 
+    // microbit 硬件模式：初始化并刷新 Palette
+    if (EditorState.projectMode && EditorState.projectMode.startsWith('microbit')) {
+      console.log('[loadProject] microbit 模式检测成功, projectMode:', EditorState.projectMode, '开始初始化...');
+      initMicrobitMode(EditorState.projectMode);
+    } else {
+      console.log('[loadProject] 非 microbit 模式, projectMode:', EditorState.projectMode);
+    }
+
     // 代码编程模式：重新应用布局
     if (EditorState.projectMode && EditorState.projectMode.startsWith('code-')) {
       initCodeMode(EditorState.projectMode);
@@ -3473,6 +3767,10 @@ window.EditorApp = (function () {
       console.error('[项目加载失败]', e);
       document.getElementById('status-text').textContent = i18n.t('status.loadFailed', null).replace('{error}', e.message);
     } finally {
+      // 无论加载是否完全成功，都确保 microbit 模式初始化
+      if (EditorState.projectMode && EditorState.projectMode.startsWith('microbit')) {
+        try { initMicrobitMode(EditorState.projectMode); } catch(e) { console.error('[microbit] finally初始化失败:', e); }
+      }
       // 无论加载是否完全成功，都尝试打开面板（高级模式已在 initAdvancedMode 中打开）
       try {
         _initPanels();

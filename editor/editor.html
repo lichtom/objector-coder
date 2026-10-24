@@ -195,6 +195,15 @@
           </div>
           <div id="audio-list"></div>
         </div>
+        <!-- microbit 上传模式: Python 代码面板 -->
+        <div id="microbit-code-section" class="hidden">
+          <div class="section-toolbar">
+            <span style="font-size:11px;color:var(--text-secondary);padding:2px 4px;"><img src="../icons/Develop File.svg" class="tb-icon" style="height:11px;"> Python 代码</span>
+            <button class="tb-btn" id="btn-refresh-python" title="刷新代码">🔄</button>
+            <button class="tb-btn" id="btn-copy-python" title="复制代码">📋</button>
+          </div>
+          <textarea id="microbit-python-output" readonly spellcheck="false" style="width:100%;flex:1;background:var(--bg);color:var(--text);border:none;padding:8px;font-family:'Consolas','Monaco',monospace;font-size:12px;resize:none;"></textarea>
+        </div>
       </aside>
       <!-- 隐藏面板（调试/文件，供DevMode/FileEditor使用） -->
       <div id="debug-content" class="hidden" style="display:none;">
@@ -681,6 +690,9 @@
   <script src="core/data-analysis.js"></script>
   <script src="core/block-types/minecraft.js"></script>
   <script src="core/minecraft-mod.js"></script>
+  <script src="core/block-types/microbit.js"></script>
+  <script src="core/microbit-bridge.js"></script>
+  <script src="core/microbit-compiler.js"></script>
   <script src="core/block-code-converter.js"></script>
   <script src="core/sb3-importer.js"></script>
   <script src="editor-app.js"></script>

@@ -683,6 +683,14 @@
         if (langRadio) {
           mode = 'code-' + langRadio.value;
         }
+      } else if (mode === 'microbit') {
+        // microbit：读取实时/上传子模式
+        const mbRadio = document.querySelector('input[name="np-microbit"]:checked');
+        if (mbRadio) {
+          mode = 'microbit-' + mbRadio.value;
+        } else {
+          mode = 'microbit-realtime';
+        }
       }
 
       hideNewProjectDialog();

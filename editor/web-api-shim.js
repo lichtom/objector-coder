@@ -564,6 +564,15 @@
     return { ok: false };
   }
 
+  /** microbit 串口通信（Web 版提示需要桌面版） */
+  async function microbitListPorts() { return []; }
+  async function microbitConnect() { alert('micro:bit 串口通信仅在桌面版中支持'); return { ok: false, error: 'Desktop only' }; }
+  async function microbitSend() { return { ok: false, error: 'Desktop only' }; }
+  async function microbitDisconnect() { return { ok: true }; }
+  async function microbitFlash() { return { ok: false, error: 'Desktop only' }; }
+  async function microbitFlashMain() { return { ok: false, error: 'Desktop only' }; }
+  async function microbitCompileFlash() { return { ok: false, error: '编译烧录仅在桌面版中支持' }; }
+
   /** 监听 JS 编辑器代码更新（Web 版 no-op） */
   function onJsEditorCodeUpdated() {}
 
@@ -625,6 +634,8 @@
     onCodeDone: (cb) => { window.api._doneCb = cb; },
     extractZipProject: async () => ({ error: 'Web 版不支持解压 ZIP 项目' }),
     onOpenProjectFromArgs: () => {}, // Web 版不支持命令行打开
+    // microbit 串口通信（Web 版降级提示）
+    microbitListPorts, microbitConnect, microbitSend, microbitDisconnect, microbitFlash, microbitFlashMain, microbitCompileFlash,
   };
 
   console.log('[WebShim] window.api registered (localStorage VFS mode)');
