@@ -147,14 +147,6 @@
 
     <!-- 主体三栏布局 -->
     <div id="main-layout">
-      <!-- 运行时锁定覆盖层 -->
-      <div id="runtime-overlay" class="hidden">
-        <div class="overlay-msg">
-          <span class="icon"><img src="../icons/Run.svg" style="height:32px;"></span>
-          运行中，停止后方可编辑<br>
-          <span style="font-size:12px;color:var(--text-muted);">按 Shift+F5 或点击停止按钮</span>
-        </div>
-      </div>
       <!-- 左侧积木面板 -->
       <aside id="palette-panel">
         <div id="palette-categories"></div>
@@ -163,6 +155,14 @@
 
       <!-- 中间积木编辑区 -->
       <main id="editor-panel">
+        <!-- 运行时锁定覆盖层 (microbit 模式下仅覆盖编辑区) -->
+        <div id="runtime-overlay" class="hidden">
+          <div class="overlay-msg">
+            <span class="icon"><img src="../icons/Run.svg" style="height:32px;"></span>
+            运行中，停止后方可编辑<br>
+            <span style="font-size:12px;color:var(--text-muted);">按 Shift+F5 或点击停止按钮</span>
+          </div>
+        </div>
         <canvas id="editor-canvas"></canvas>
         <div id="canvas-zoom-controls">
           <button id="btn-zoom-out" title="缩小">−</button>
@@ -195,6 +195,8 @@
           </div>
           <div id="audio-list"></div>
         </div>
+        <!-- microbit 模拟器 (实时/上传模式自动显示) -->
+        <div id="microbit-sim-container" class="hidden"></div>
         <!-- microbit 上传模式: Python 代码面板 -->
         <div id="microbit-code-section" class="hidden">
           <div class="section-toolbar">
@@ -691,6 +693,7 @@
   <script src="core/block-types/minecraft.js"></script>
   <script src="core/minecraft-mod.js"></script>
   <script src="core/block-types/microbit.js"></script>
+  <script src="core/microbit-simulator.js"></script>
   <script src="core/microbit-bridge.js"></script>
   <script src="core/microbit-compiler.js"></script>
   <script src="core/block-code-converter.js"></script>

@@ -205,14 +205,73 @@ input, textarea, [contenteditable="true"] {
 .audio-item:hover { border-color:var(--accent); }
 
 /* microbit 上传模式: Python 代码面板 */
-#microbit-code-section { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+#microbit-code-section { flex:1; display:flex; flex-direction:column; overflow:hidden; min-height:0; }
 #microbit-code-section.hidden { display:none; }
+/* microbit 模拟器容器: 实时模式填满右侧栏 */
+#microbit-sim-container { flex:1; display:flex; flex-direction:column; min-height:0; overflow:hidden; }
+#microbit-sim-container.hidden { display:none; }
+/* microbit 上传模式: 右侧栏左右分栏 */
+#right-panel.microbit-upload-layout {
+  flex-direction: row !important;
+  width: var(--stage-w, 480px);
+}
+#right-panel.microbit-upload-layout > #sprite-section,
+#right-panel.microbit-upload-layout > #audio-section { display: none !important; }
+#right-panel.microbit-upload-layout > #microbit-code-section {
+  flex: 1 1 50%;
+  min-width: 0;
+  border-right: 1px solid var(--border);
+}
+#right-panel.microbit-upload-layout > #microbit-sim-container {
+  flex: 1 1 50%;
+  min-width: 0;
+  overflow-y: auto;
+  border-top: none;
+}
+#right-panel.microbit-upload-layout > #microbit-sim-container > #microbit-sim-root {
+  border-top: none;
+}
 #microbit-python-output { flex:1; width:100%; background:var(--bg); color:var(--text); border:none; padding:8px; font-family:'Consolas','Monaco',monospace; font-size:12px; resize:none; outline:none; }
 .audio-name { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text-primary); }
 .audio-btn { padding:2px 6px; background:var(--bg-secondary); border:1px solid var(--border); color:var(--text-secondary); border-radius:3px; cursor:pointer; font-size:10px; }
 .audio-btn:hover { border-color:var(--accent); color:var(--text-primary); }
 .audio-btn.playing { color:var(--green); border-color:var(--green); }
 .audio-btn.del { color:var(--red); }
+
+/* micro:bit 模拟器 */
+#microbit-sim-root { flex:1; display:flex; flex-direction:column; overflow:hidden; border-top:1px solid var(--border); min-height:0; }
+#microbit-sim-root.hidden { display:none; }
+.mbs-board { display:flex; flex-direction:column; gap:5px; padding:6px; flex:1; overflow-y:auto; background:linear-gradient(180deg,#1a1d24 0%,#0f1116 100%); }
+.mbs-title { font-size:10px; color:#cbd5e1; font-weight:600; text-align:center; padding:2px 0; letter-spacing:0.5px; }
+.mbs-plate { position:relative; background:#7a1f1f url('../microbit-firmware/microbit_image.png') center/contain no-repeat; border-radius:10px 10px 4px 4px; padding:6px 4px; display:flex; align-items:center; justify-content:center; gap:4px; box-shadow:inset 0 2px 8px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.3); height:90px; flex-shrink:0; }
+.mbs-led-frame { display:flex; flex-direction:column; gap:2px; padding:4px; background:rgba(20,5,5,0.55); border-radius:4px; box-shadow:inset 0 2px 6px rgba(0,0,0,0.6); backdrop-filter:blur(1px); }
+.mbs-row { display:flex; gap:2px; }
+.mbs-led { width:10px; height:10px; border-radius:50%; background:rgba(30,30,35,0.85); transition:all 0.12s ease; box-shadow:inset 0 0 2px rgba(0,0,0,0.6); }
+.mbs-btn { width:18px; height:18px; border-radius:50%; border:none; background:rgba(26,26,26,0.85); color:#cbd5e1; font-size:9px; font-weight:700; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.4), inset 0 -1px 2px rgba(0,0,0,0.6); transition:transform 0.08s, box-shadow 0.08s, background 0.08s; user-select:none; backdrop-filter:blur(1px); flex-shrink:0; }
+.mbs-btn:hover { background:rgba(42,42,42,0.9); }
+.mbs-btn:active, .mbs-btn.active { transform:translateY(1px); background:#f59e0b; color:#0f1116; box-shadow:0 0 10px rgba(245,158,11,0.6); }
+.mbs-pins { background:#0b0d12; border:1px solid rgba(100,116,139,0.2); border-radius:5px; padding:4px; flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
+.mbs-pins-title { font-size:9px; color:#94a3b8; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }
+.mbs-hint { color:#475569; font-size:8px; font-style:italic; }
+.mbs-pins-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(42px,1fr)); gap:3px; flex:1; overflow-y:auto; }
+.mbs-pin { display:flex; flex-direction:column; align-items:center; gap:1px; padding:3px 1px; background:rgba(30,41,59,0.5); border:1px solid rgba(100,116,139,0.25); border-radius:3px; cursor:pointer; transition:border-color 0.15s; }
+.mbs-pin:hover { border-color:var(--accent); }
+.mbs-pin-dot { width:6px; height:6px; border-radius:50%; background:rgba(100,116,139,0.5); transition:all 0.15s; }
+.mbs-pin-name { font-size:8px; color:#cbd5e1; font-weight:600; }
+.mbs-pin-mode { font-size:7px; color:#fff; padding:0px 3px; border-radius:2px; }
+.mbs-pin-input { width:100%; background:#1e293b; border:1px solid rgba(100,116,139,0.3); color:#e2e8f0; font-size:8px; padding:1px 2px; border-radius:2px; text-align:center; outline:none; }
+.mbs-pin-input:focus { border-color:var(--accent); }
+.mbs-sensors { background:#0b0d12; border:1px solid rgba(100,116,139,0.2); border-radius:5px; padding:4px; flex:1; min-height:0; display:flex; flex-direction:column; overflow-y:auto; }
+.mbs-sensors-title { font-size:9px; color:#94a3b8; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }
+.mbs-sensor { display:flex; align-items:center; gap:3px; margin-bottom:2px; }
+.mbs-sensor-label { font-size:8px; color:#cbd5e1; width:42px; flex-shrink:0; }
+.mbs-sensor-input { flex:1; background:#1e293b; border:1px solid rgba(100,116,139,0.3); color:#e2e8f0; font-size:9px; padding:1px 3px; border-radius:2px; outline:none; }
+.mbs-sensor-input:focus { border-color:var(--accent); }
+.mbs-sensor-unit { font-size:8px; color:#64748b; width:12px; flex-shrink:0; }
+.mbs-toolbar { display:flex; gap:3px; justify-content:center; padding:3px 0; border-top:1px solid rgba(100,116,139,0.2); flex-shrink:0; }
+.mbs-tbtn { background:rgba(30,41,59,0.5); border:1px solid rgba(100,116,139,0.25); color:#cbd5e1; padding:2px 5px; border-radius:3px; cursor:pointer; font-size:10px; transition:all 0.12s; }
+.mbs-tbtn:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+
 
 /* Advanced (Godot-style) layout */
 #advanced-layout { flex:1; display:flex; overflow:hidden; }

@@ -7,6 +7,7 @@ const MicrobitBridge = (function () {
   let _connected = false;
   let _port = '';
   let _mode = 'realtime'; // 'realtime' | 'upload'
+  let _simulatorMode = false; // 未连接真实设备时自动启用模拟器
 
   // ===== 连接管理 =====
 
@@ -26,6 +27,7 @@ const MicrobitBridge = (function () {
       if (result && result.ok) {
         _connected = true;
         _port = portPath;
+        _simulatorMode = false;
         console.log('[MicrobitBridge] Connected to', portPath);
         return { ok: true };
       }
@@ -35,6 +37,22 @@ const MicrobitBridge = (function () {
     }
   }
 
+  /** 启用模拟器 (无需真实设备) */
+  function enableSimulator() {
+    _simulatorMode = true;
+    _connected = false;
+    _port = 'simulator';
+    console.log('[MicrobitBridge] Simulator enabled');
+    return { ok: true };
+  }
+
+  function disableSimulator() {
+    _simulatorMode = false;
+    if (_port === 'simulator') _port = '';
+  }
+
+  function isUsingSimulator() { return _simulatorMode && !_connected; }
+
   function disconnect() {
     if (_connected) {
       window.api.microbitDisconnect();
@@ -42,27 +60,39 @@ const MicrobitBridge = (function () {
       _port = '';
       console.log('[MicrobitBridge] Disconnected');
     }
+    if (_simulatorMode) {
+      _simulatorMode = false;
+      _port = '';
+      console.log('[MicrobitBridge] Simulator disabled');
+    }
   }
 
-  function isConnected() { return _connected; }
+  function isConnected() { return _connected || _simulatorMode; }
   function getMode() { return _mode; }
 
   // ===== 实时模式: 发送命令并等待响应 =====
 
   async function send(cmd) {
-    if (!_connected) {
-      console.warn('[MicrobitBridge] Not connected');
-      return { ok: false, error: 'Not connected' };
-    }
-    try {
-      const result = await window.api.microbitSend(cmd);
-      if (result && result.ok) {
-        return result;
+    // 优先走真实设备
+    if (_connected) {
+      try {
+        const result = await window.api.microbitSend(cmd);
+        if (result && result.ok) return result;
+        return { ok: false, error: result ? result.error : 'Send failed' };
+      } catch (e) {
+        return { ok: false, error: String(e) };
       }
-      return { ok: false, error: result ? result.error : 'Send failed' };
-    } catch (e) {
-      return { ok: false, error: String(e) };
     }
+    // 否则走模拟器
+    if (_simulatorMode && typeof MicrobitSimulator !== 'undefined' && MicrobitSimulator.isReady()) {
+      try {
+        return MicrobitSimulator.handle(cmd);
+      } catch (e) {
+        return { ok: false, error: 'Simulator error: ' + e.message };
+      }
+    }
+    console.warn('[MicrobitBridge] Not connected');
+    return { ok: false, error: 'Not connected' };
   }
 
   /** 发送命令并解析响应数据 */
@@ -237,6 +267,7 @@ const MicrobitBridge = (function () {
 
   return {
     listPorts, connect, disconnect, isConnected, getMode,
+    enableSimulator, disableSimulator, isUsingSimulator,
     send, query,
     ledOn, ledOff, ledPattern, ledPixel, text, show,
     buzz, buzzOff, servo, servoOff, motor, motorBrake,

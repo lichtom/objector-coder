@@ -1426,6 +1426,10 @@ window.EditorApp = (function () {
       if (audioSection) audioSection.style.display = 'none';
       if (codeSection) codeSection.classList.remove('hidden');
       
+      // 上传模式: 右侧栏左右分栏 (左=代码, 右=模拟器)
+      const rightPanel = document.getElementById('right-panel');
+      if (rightPanel) rightPanel.classList.add('microbit-upload-layout');
+      
       // 绑定刷新/复制按钮
       const refreshBtn = document.getElementById('btn-refresh-python');
       const copyBtn = document.getElementById('btn-copy-python');
@@ -1452,10 +1456,42 @@ window.EditorApp = (function () {
       
       // 上传模式额外添加“编译并烧录”按钮
       _addMicrobitFlashBtn();
+    } else if (subMode === 'realtime') {
+      // 实时模式: 隐藏角色/音频栏 (microbit 不依赖舞台角色)
+      const spriteSection = document.getElementById('sprite-section');
+      const audioSection = document.getElementById('audio-section');
+      if (spriteSection) spriteSection.style.display = 'none';
+      if (audioSection) audioSection.style.display = 'none';
     }
+
+    // 初始化 microbit 模拟器 (实时模式 + 上传模式 共用)
+    _initMicrobitSimulator();
   
     _microbitInited = true;
     console.log('[microbit] 初始化完成');
+  }
+
+  /** 初始化 microbit 模拟器: 挂载 UI + 启用 Bridge 模拟器模式 */
+  function _initMicrobitSimulator() {
+    const container = document.getElementById('microbit-sim-container');
+    if (!container) {
+      console.warn('[microbit] simulator container not found');
+      return;
+    }
+    container.classList.remove('hidden');
+    if (typeof MicrobitSimulator !== 'undefined') {
+      // 避免重复 init
+      if (!MicrobitSimulator.isReady()) {
+        MicrobitSimulator.init(container);
+        console.log('[microbit] simulator UI initialized');
+      }
+    } else {
+      console.warn('[microbit] MicrobitSimulator not loaded');
+    }
+    // 启用 Bridge 的模拟器回退 (未连接真实设备时命令发往模拟器)
+    if (typeof MicrobitBridge !== 'undefined') {
+      MicrobitBridge.enableSimulator();
+    }
   }
 
   /** 刷新 Python 代码显示 */
@@ -2215,8 +2251,12 @@ window.EditorApp = (function () {
     // 运行时锁定编辑区
     function _lockEditorForRuntime() {
       const overlay = document.getElementById('runtime-overlay');
+      const isMicrobit = typeof EditorState !== 'undefined' && EditorState.projectMode && EditorState.projectMode.startsWith('microbit');
       if (overlay) overlay.classList.remove('hidden');
-      ['palette-panel', 'editor-panel', 'right-panel'].forEach(id => {
+      // microbit 模式: 仅锁定编辑区 (角色栏已隐藏, 积木栏保持可用)
+      // 其他模式: 锁定全部三栏
+      const lockIds = isMicrobit ? ['editor-panel'] : ['palette-panel', 'editor-panel', 'right-panel'];
+      lockIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add('locked');
       });
