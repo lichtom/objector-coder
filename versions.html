@@ -60,6 +60,8 @@ nav .container{display:flex;align-items:center;justify-content:space-between}
 .dl-btn.exe{background:linear-gradient(135deg,var(--accent),#8b5cf6)}
 .dl-btn.zip{background:linear-gradient(135deg,#2d3436,#636e72)}
 .dl-btn.linux{background:linear-gradient(135deg,#fdcb6e,#e17055)}
+.dl-btn.dmg{background:linear-gradient(135deg,#636e72,#b2bec3)}
+.dl-btn.macZip{background:linear-gradient(135deg,#2d3436,#636e72)}
 .dl-size{font-size:11px;color:var(--muted);margin-left:2px;font-weight:400}
 
 footer{border-top:1px solid rgba(108,92,231,.15);padding:32px 0;text-align:center}
@@ -124,6 +126,14 @@ footer p{font-size:12px;color:var(--muted)}
         <a href="https://github.com/lichtom/Objector/releases/download/v1.0.34/objector-1.0.34.tar.gz" class="dl-btn linux" data-dl="linux">
           <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Linux 压缩包<span class="dl-size">122.3 MB</span>
+        </a>
+        <a href="https://github.com/lichtom/Objector/releases/download/v1.0.34/Objector-1.0.34-mac.dmg" class="dl-btn dmg" data-dl="dmg">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          macOS 安装包 (.dmg)<span class="dl-size">144 MB</span>
+        </a>
+        <a href="https://github.com/lichtom/Objector/releases/download/v1.0.34/Objector-1.0.34-arm64-mac.zip" class="dl-btn macZip" data-dl="macZip">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          macOS 压缩包 (.zip)<span class="dl-size">128.9 MB</span>
         </a>
       </div>
     </div>
@@ -778,7 +788,7 @@ const vi18n = {
     'v1016.desc': '3D Plus 扩展 · 社区 3D 预览 · Dropdown 修复',
     'v1015.desc': '3D 模块支持 · 3D 对象创建与相机设置',
     'v1000.desc': '🎉 首个发布版本',
-    'dl.installer': 'Windows 安装包', 'dl.zip': 'Windows 压缩包', 'dl.linux': 'Linux 压缩包',
+    'dl.installer': 'Windows 安装包', 'dl.zip': 'Windows 压缩包', 'dl.linux': 'Linux 压缩包', 'dl.dmg': 'macOS 安装包 (.dmg)', 'dl.macZip': 'macOS 压缩包 (.zip)',
   },
   'en': {
     'nav.back': 'Back to Home', 'nav.downloadLatest': 'Download Latest', 'nav.features': 'Features',
@@ -805,7 +815,7 @@ const vi18n = {
     'v1016.desc': '3D Plus Extension · Community 3D Preview · Dropdown Fix',
     'v1015.desc': '3D Module Support · 3D Object Creation & Camera Settings',
     'v1000.desc': '🎉 First Release',
-    'dl.installer': 'Windows Installer', 'dl.zip': 'Windows Portable', 'dl.linux': 'Linux Archive',
+    'dl.installer': 'Windows Installer', 'dl.zip': 'Windows Portable', 'dl.linux': 'Linux Archive', 'dl.dmg': 'macOS Installer (.dmg)', 'dl.macZip': 'macOS Archive (.zip)',
   }
 };
 
