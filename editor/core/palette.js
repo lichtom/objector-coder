@@ -30,15 +30,15 @@ const Palette = (function () {
     // microbit 模式过滤
     const isMicrobitMode = typeof EditorState !== 'undefined' && EditorState.projectMode && EditorState.projectMode.startsWith('microbit');
     const isMicrobitUpload = typeof EditorState !== 'undefined' && EditorState.projectMode === 'microbit-upload';
-    const isMicrobitRealtime = typeof EditorState !== 'undefined' && EditorState.projectMode === 'microbit-realtime';
-    // microbit (实时 + 上传) 只保留不依赖舞台窗口的模块
-    const MICROBIT_ALLOWED = ['control','operators','variables','functions','oop','lists','microbit'];
+    // microbit 上传模式：编译为 hex 运行在 micro:bit 上，无舞台可用，仅保留基础模块
+    // microbit 实时模式：通过串口通信 + 舞台可用，开放所有模块
+    const MICROBIT_UPLOAD_ALLOWED = ['control','operators','variables','functions','oop','lists','microbit'];
     filteredCats = filteredCats.filter(cat => {
       if (cat.id === 'minecraft') return isMinecraftMode;
       if (cat.id === 'scene') return isAdvancedMode;
       if (cat.id === 'microbit') return isMicrobitMode;
-      if (isMicrobitUpload || isMicrobitRealtime) {
-        return MICROBIT_ALLOWED.includes(cat.id);
+      if (isMicrobitUpload) {
+        return MICROBIT_UPLOAD_ALLOWED.includes(cat.id);
       }
       return true;
     });
