@@ -48,16 +48,16 @@ section{padding:80px 0}
 nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 0;transition:all .3s}
 nav.scrolled{background:rgba(10,10,26,.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(108,92,231,.2)}
 nav .container{display:flex;align-items:center;justify-content:space-between}
-.nav-logo{font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--accent2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.nav-links{display:flex;gap:32px;align-items:center}
-.nav-links a{font-size:14px;color:var(--text2);font-weight:500;position:relative}
+.nav-left{display:flex;align-items:center;gap:32px}
+.nav-logo{font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--accent2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.nav-logo img{flex-shrink:0}
+.nav-links{display:flex;gap:24px;align-items:center}
+.nav-links a{font-size:14px;color:var(--text2);font-weight:500;position:relative;white-space:nowrap}
 .nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:var(--accent2);transition:width .3s}
 .nav-links a:hover{color:var(--text)}
 .nav-links a:hover::after{width:100%}
-.nav-cta{background:linear-gradient(135deg,var(--accent),#8b5cf6);color:#fff!important;padding:8px 20px;border-radius:8px;font-weight:600;font-size:13px;border:none;cursor:pointer;transition:all .3s;box-shadow:0 4px 15px rgba(108,92,231,.4)}
+.nav-cta{background:linear-gradient(135deg,var(--accent),#8b5cf6);color:#fff!important;padding:8px 20px;border-radius:8px;font-weight:600;font-size:13px;border:none;cursor:pointer;transition:all .3s;box-shadow:0 4px 15px rgba(108,92,231,.4);white-space:nowrap}
 .nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(108,92,231,.5)}
-.nav-web-btn{background:linear-gradient(135deg,var(--cyan),#00b894);color:#fff!important;padding:8px 20px;border-radius:8px;font-weight:700;font-size:13px;border:none;cursor:pointer;transition:all .3s;box-shadow:0 4px 15px rgba(0,210,211,.4);text-decoration:none}
-.nav-web-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,210,211,.5);color:#fff!important}
 
 /* ===== Hero ===== */
 .hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding-top:100px;position:relative}
@@ -78,6 +78,7 @@ nav .container{display:flex;align-items:center;justify-content:space-between}
 
 /* ===== App Preview ===== */
 .preview{padding:40px 0 80px;text-align:center}
+.preview img{max-width:100%;height:auto;border-radius:16px;border:1px solid rgba(108,92,231,.3);box-shadow:var(--glow),0 20px 60px rgba(0,0,0,.5)}
 .preview-frame{position:relative;max-width:960px;margin:0 auto;border-radius:16px;overflow:hidden;border:1px solid rgba(108,92,231,.3);box-shadow:var(--glow),0 20px 60px rgba(0,0,0,.5)}
 .preview-frame::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(108,92,231,.08),transparent 40%);pointer-events:none;z-index:2}
 .preview-titlebar{background:var(--surface);padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(108,92,231,.2)}
@@ -178,7 +179,8 @@ footer p{font-size:13px;color:var(--muted)}
 
 /* ===== Responsive ===== */
 @media(max-width:768px){
-  .nav-links{display:none}
+  .nav-left{flex-direction:column;gap:8px}
+  .nav-links{gap:16px;flex-wrap:wrap;justify-content:center}
   .hero-stats{gap:24px}
   .stat-num{font-size:24px}
   .preview-body{flex-direction:column}
@@ -220,19 +222,22 @@ html[lang="en"] .mode-card.featured::after{content:'Recommended'}
 <!-- Navigation -->
 <nav id="navbar">
   <div class="container">
-    <div class="nav-logo"><img src="https://lichtom.github.io/objector-coder/icon.svg" width="25"> Objector</div>
-    <div class="lang-switcher">
-      <button class="lang-btn active" onclick="setLang('zh-CN')">中文</button>
-      <button class="lang-btn" onclick="setLang('en')">EN</button>
+    <div class="nav-left">
+      <a href="#" class="nav-logo"><img src="https://lichtom.github.io/objector-coder/icon.svg" width="25"> Objector</a>
+      <div class="nav-links">
+        <a href="#features" data-i18n="nav.features">功能特性</a>
+        <a href="#v1034" data-i18n="nav.v1034">v1.0.34 新特性</a>
+        <a href="#modules" data-i18n="nav.modules">积木模块</a>
+        <a href="#modes" data-i18n="nav.modes">编辑模式</a>
+        <a href="https://lichtom.github.io/objector-coder/blocks-guide/" data-i18n="nav.blocksGuide">📖 积木指南</a>
+        <a href="https://lichtom.github.io/objector-coder/extension-api" data-i18n="nav.extensionApi">📖 扩展API</a>
+      </div>
     </div>
-    <div class="nav-links">
-      <a href="#features" data-i18n="nav.features">功能特性</a>
-      <a href="#v1034" data-i18n="nav.v1034">v1.0.34 新特性</a>
-      <a href="#modules" data-i18n="nav.modules">积木模块</a>
-      <a href="#modes" data-i18n="nav.modes">编辑模式</a>
-      <a href="https://lichtom.github.io/objector-coder/blocks-guide/" data-i18n="nav.blocksGuide">📖 积木指南</a>
-      <a href="https://lichtom.github.io/objector-coder/extension-api" data-i18n="nav.extensionApi">📖 扩展API</a>
-      <a href="https://lichtom.github.io/objector-coder/editor/" class="nav-web-btn" data-i18n="nav.webVersion">🌐 网页版</a>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="lang-switcher">
+        <button class="lang-btn active" onclick="setLang('zh-CN')">中文</button>
+        <button class="lang-btn" onclick="setLang('en')">EN</button>
+      </div>
       <a href="#download" class="nav-cta" data-i18n="nav.download">立即下载</a>
     </div>
   </div>
@@ -251,10 +256,6 @@ html[lang="en"] .mode-card.featured::after{content:'Recommended'}
       <a href="#download" class="btn-primary">
         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         <span data-i18n="hero.download">免费下载</span>
-      </a>
-      <a href="https://lichtom.github.io/objector-coder/editor/" class="btn-secondary" style="border-color:rgba(0,210,211,.5);color:var(--cyan)">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-        <span data-i18n="hero.online">🌐 在线体验网页版</span>
       </a>
       <a href="#features" class="btn-secondary">
         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
@@ -733,12 +734,8 @@ html[lang="en"] .mode-card.featured::after{content:'Recommended'}
       </div>
       <a href="versions.html" style="color:var(--accent2)" data-i18n="download.versions">📜 历史版本下载</a>
 
-      <!-- 在线版 & 社区 -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px;">
-        <a href="https://lichtom.github.io/objector-coder/editor/" class="download-btn" style="justify-content:center;background:linear-gradient(135deg,var(--cyan),#00b894);">
-          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-          <span data-i18n="download.onlineEditor">🌐 在线编辑器（无需安装）</span>
-        </a>
+      <!-- 社区 -->
+      <div style="margin-bottom:20px;">
         <a href="https://lichtom.github.io/objector-coder/community/" class="download-btn" style="justify-content:center;background:linear-gradient(135deg,var(--cyan),#00b894);">
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
           <span data-i18n="download.community">🌐 社区</span>
@@ -807,11 +804,11 @@ const i18n = {
     'pageTitle': 'Objector - 图形化积木编程编辑器',
     'nav.features': '功能特性', 'nav.v1025beta': 'v1.0.25.beta 新特性', 'nav.modules': '积木模块',
     'nav.modes': '编辑模式', 'nav.blocksGuide': '📖 积木指南', 'nav.extensionApi': '📖 扩展API',
-    'nav.webVersion': '🌐 网页版', 'nav.download': '立即下载',
+    'nav.download': '立即下载',
     'hero.badge': 'v1.0.34 桌面版 · 开源免费',
     'hero.title': '用积木搭建<br><span class="gradient">无限创意</span>',
     'hero.sub': 'Objector 是一款强大的图形化积木编程编辑器，让零基础用户也能创作动画、游戏和交互式程序。从入门到专业开发，一站搞定。',
-    'hero.download': '免费下载', 'hero.online': '🌐 在线体验网页版', 'hero.learnMore': '了解更多',
+    'hero.download': '免费下载', 'hero.learnMore': '了解更多',
     'hero.blocks': '积木块', 'hero.modules': '功能模块', 'hero.editModes': '编辑模式', 'hero.possibilities': '可能性',
     'features.tag': '✨ 核心特性', 'features.title': '为创造力而生的编辑器',
     'features.desc': '不仅仅是 Scratch 的复刻，更是面向专业开发者的全面进化。15 大核心特性，覆盖创作全流程。',
@@ -900,7 +897,7 @@ const i18n = {
     'download.aliyun': '下载太慢？试试阿里云盘 →',
     'download.comingSoon': '即将推出', 'download.linuxPending': 'Linux 版本正在准备中，敬请期待', 'download.linuxTar': '压缩包 (.tar.gz)', 'download.linuxReq': '需要 libgtk-3 和 libnss3', 'download.dmg': '安装包 (.dmg)', 'download.macZip': '压缩包 (.zip)', 'download.macReq': 'Apple Silicon (M1/M2/M3/M4) · macOS 11+',
     'download.versions': '📜 历史版本下载',
-    'download.onlineEditor': '🌐 在线编辑器（无需安装）', 'download.community': '🌐 社区',
+    'download.community': '🌐 社区',
     'download.guide': '📖 积木用法指南',
     'ft.features': '功能特性', 'ft.modules': '积木模块', 'ft.modes': '编辑模式', 'ft.download': '下载',
     'ft.copyright': '© 2026 Objector. 用积木搭建无限创意。'
@@ -909,11 +906,11 @@ const i18n = {
     'pageTitle': 'Objector - Visual Block Programming Editor',
     'nav.features': 'Features', 'nav.v1025beta': "What's New v1.0.25.beta", 'nav.modules': 'Block Modules',
     'nav.modes': 'Edit Modes', 'nav.blocksGuide': '📖 Blocks Guide', 'nav.extensionApi': '📖 Extension API',
-    'nav.webVersion': '🌐 Web Version', 'nav.download': 'Download',
+    'nav.download': 'Download',
     'hero.badge': 'v1.0.34 Desktop · Open Source & Free',
     'hero.title': 'Build with Blocks<br><span class="gradient">Unlimited Creativity</span>',
     'hero.sub': 'Objector is a powerful visual block programming editor that enables even beginners to create animations, games, and interactive programs. From beginner to professional development, all in one place.',
-    'hero.download': 'Free Download', 'hero.online': '🌐 Try Online Version', 'hero.learnMore': 'Learn More',
+    'hero.download': 'Free Download', 'hero.learnMore': 'Learn More',
     'hero.blocks': 'Blocks', 'hero.modules': 'Modules', 'hero.editModes': 'Edit Modes', 'hero.possibilities': 'Possibilities',
     'features.tag': '✨ Core Features', 'features.title': 'An Editor Built for Creativity',
     'features.desc': 'Not just a Scratch clone, but a comprehensive evolution for professional developers. 15 core features covering the entire creation workflow.',
@@ -1002,7 +999,7 @@ const i18n = {
     'download.aliyun': 'Slow download? Try Aliyun Drive →',
     'download.comingSoon': 'Coming Soon', 'download.linuxPending': 'Linux version is being prepared, stay tuned', 'download.linuxTar': 'Archive (.tar.gz)', 'download.linuxReq': 'Requires libgtk-3 and libnss3', 'download.dmg': 'Installer (.dmg)', 'download.macZip': 'Archive (.zip)', 'download.macReq': 'Apple Silicon (M1/M2/M3/M4) · macOS 11+',
     'download.versions': '📜 Previous Versions',
-    'download.onlineEditor': '🌐 Online Editor (No Install)', 'download.community': '🌐 Community',
+    'download.community': '🌐 Community',
     'download.guide': '📖 Blocks Usage Guide',
     'ft.features': 'Features', 'ft.modules': 'Modules', 'ft.modes': 'Edit Modes', 'ft.download': 'Download',
     'ft.copyright': '© 2026 Objector. Build unlimited creativity with blocks.'
