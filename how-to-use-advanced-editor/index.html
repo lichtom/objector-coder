@@ -116,8 +116,9 @@
 <body>
   <div class="hero">
     <h1>🎮 高级编辑器使用指南</h1>
-    <p>ObjectScratch Godot 式编辑器 · 图形化与 JavaScript 双模编程</p>
+    <p>ObjectScratch Godot 式编辑器 · 图形化积木与 Python / JavaScript / ALB 多语言代码编程</p>
     <span class="badge">v1.0.16+</span>
+    <span class="badge">v1.0.35 代码模式</span>
     <span class="badge">高级模式</span>
   </div>
 
@@ -133,6 +134,7 @@
         <li><a href="#js-mode">JavaScript 编程模式</a></li>
         <li><a href="#js-api">JS API 完整参考</a></li>
         <li><a href="#examples">实用示例代码</a></li>
+        <li><a href="#code-mode">v1.0.35 代码编程模式与多线程</a></li>
         <li><a href="#tips">技巧与常见问题</a></li>
       </ol>
     </nav>
@@ -455,6 +457,7 @@ log("克隆体索引: " + cloneIdx);</code></pre>
       <ul>
         <li>在积木中添加一个「重复执行」积木，在 JS 中使用 <code>setInterval</code></li>
         <li>或者使用 <code>sprite.updateVelocity()</code> 配合速度系统</li>
+        <li>或者使用 v1.0.35 内置的 <code>thread_spawn</code> 协作式多线程（见第 8 节）</li>
       </ul>
       <pre><code>// 每 30ms 更新一次位置（约 33fps）
 setInterval(() => {
@@ -469,6 +472,47 @@ setInterval(() => {
 
       <h3>支持 ES6+ 语法吗？</h3>
       <p><strong>支持！</strong> 可以使用箭头函数、模板字符串、解构、async/await 等所有现代 JS 特性。</p>
+    </section>
+
+    <!-- 8. v1.0.35 代码编程模式 -->
+    <section id="code-mode">
+      <h2>8. v1.0.35 代码编程模式与多线程</h2>
+      <p>v1.0.35 起，代码编程模式的子模式为 <strong>Python / JavaScript / ALB</strong> 三种语言。代码逐帧执行，直接驱动角色运动、造型、声音与侦测，舞台在独立窗口实时同步。</p>
+
+      <h3>ALB —— Objector 自研语言</h3>
+      <p>ALB 是一种 s-表达式（括号前缀）语言，解释器随应用打包：</p>
+      <ul>
+        <li>140+ 内建函数：角色操作、运动、外观、侦测、变量、运算、输出等</li>
+        <li>编辑器内置语法高亮与自动补全</li>
+        <li>可从宿主注入自定义常量、变量与函数（<code>ALB.setFunc(name, fn)</code>）</li>
+      </ul>
+      <pre><code>; ALB 示例：角色说话并移动
+(say "你好，我是 ALB！")
+(change_x 10)
+
+; 启动一个每 100ms 移动一次的线程
+(thread_spawn (func () (change_x 1)) 100)</code></pre>
+
+      <h3>内置协作式多线程（三种语言通用）</h3>
+      <table>
+        <tr><th>函数</th><th>说明</th></tr>
+        <tr><td><code>thread_spawn(fn[, intervalMs])</code></td><td>注册工作函数按周期执行，默认周期 33ms，返回线程 id</td></tr>
+        <tr><td><code>thread_kill(id)</code></td><td>结束指定线程，成功返回 1，否则返回 0</td></tr>
+        <tr><td><code>thread_list()</code></td><td>返回当前存活线程 id 数组</td></tr>
+        <tr><td><code>thread_id()</code></td><td>在工作函数内返回自身线程 id；主线程中返回 0</td></tr>
+      </table>
+      <p>不同语言的工作函数可以直接交给调度器：</p>
+      <pre><code>// JavaScript：传 function，可用 sprite 代理对象（camelCase）
+const t = thread_spawn(function () {
+  sprite.x += 1;
+}, 100);</code></pre>
+      <pre><code># Python：传 def / lambda
+def work():
+    change_x(1)
+t = thread_spawn(work, 100)</code></pre>
+      <div class="warn">
+        <strong>注意：</strong> 线程为协作式调度（单线程轮流执行），<code>thread_spawn</code> 只能在程序运行中调用；工作函数应尽快返回，避免长时间阻塞拖慢舞台刷新与其他线程。
+      </div>
     </section>
 
   </div>

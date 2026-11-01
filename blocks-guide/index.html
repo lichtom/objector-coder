@@ -100,6 +100,7 @@ footer p{font-size:13px;color:var(--muted)}
       <a href="#motion">运动</a>
       <a href="#control">控制</a>
       <a href="#functions">函数</a>
+      <a href="#code-mode">代码模式</a>
     </div>
   </div>
 </nav>
@@ -107,7 +108,7 @@ footer p{font-size:13px;color:var(--muted)}
 <div class="page-hero">
   <div class="container">
     <h1>编辑器与积木<br><span class="gradient">用法指南</span></h1>
-    <p>Objector v1.0.4 完整参考手册 — 涵盖编辑器操作、12 大积木模块、100+ 积木的详细用法说明</p>
+    <p>Objector v1.0.35 完整参考手册 — 涵盖编辑器操作、12 大积木模块、100+ 积木与代码编程模式的详细用法说明</p>
   </div>
 </div>
 
@@ -129,6 +130,7 @@ footer p{font-size:13px;color:var(--muted)}
     <a href="#sensing"><span class="dot" style="background:#5CB1D6"></span>侦测</a>
     <a href="#sound"><span class="dot" style="background:#CF63CF"></span>声音</a>
     <a href="#io"><span class="dot" style="background:#59C059"></span>IO</a>
+    <a href="#code-mode"><span class="dot" style="background:#6C5CE7"></span>代码模式</a>
   </div>
 </div>
 </div>
@@ -137,7 +139,7 @@ footer p{font-size:13px;color:var(--muted)}
 <section id="editor">
 <div class="container">
   <h2 class="section-title">🖥️ 编辑器入门</h2>
-  <p class="section-desc">Objector 是一款基于 Electron 的图形化积木编程桌面编辑器，支持 Windows 平台。</p>
+  <p class="section-desc">Objector 是一款基于 Electron 的图形化积木编程桌面编辑器，支持 Windows / Linux / macOS 平台。</p>
 
   <div class="editor-section">
     <div class="editor-card">
@@ -580,9 +582,34 @@ footer p{font-size:13px;color:var(--muted)}
 </div>
 </section>
 
+<!-- ==================== CODE MODE ==================== -->
+<section id="code-mode">
+<div class="container">
+  <h2 class="section-title"><span class="cat-dot" style="background:#6C5CE7"></span>代码编程模式（v1.0.35）</h2>
+  <p class="section-desc">代码模式的子模式为 Python / JavaScript / ALB 三种语言。代码逐帧执行，直接驱动角色运动、造型、声音与侦测，舞台在独立窗口实时同步。</p>
+
+  <div class="tip">
+    <b>ALB 是什么？</b> Objector 自研的 s-表达式（括号前缀）语言，解释器随应用打包：140+ 内建函数、语法高亮与自动补全，可从宿主注入自定义常量、变量与函数。示例：<code>(say "你好")</code>、<code>(change_x 10)</code>。
+  </div>
+
+  <h3 style="color:var(--pink);margin:24px 0 12px;font-size:16px">内置协作式多线程（三种语言通用，v1.0.35 新增）</h3>
+  <table class="block-table">
+    <tr><th>函数</th><th>说明</th></tr>
+    <tr><td class="block-label">thread_spawn(fn[, 周期ms])</td><td>注册工作函数按周期执行（默认 33ms），返回线程 id</td></tr>
+    <tr><td class="block-label">thread_kill(id)</td><td>结束指定线程，成功返回 1，否则返回 0</td></tr>
+    <tr><td class="block-label">thread_list()</td><td>返回当前存活线程 id 数组</td></tr>
+    <tr><td class="block-label">thread_id()</td><td>在工作函数内返回自身线程 id；主线程中返回 0</td></tr>
+  </table>
+  <p>工作函数直接用各语言的字面量：JS 传 <code>function</code>，Python 传 <code>def</code> / <code>lambda</code>，ALB 传 <code>(func () ...)</code>。</p>
+  <div class="tip warn">
+    <b>注意：</b> 线程为协作式调度（单线程轮流执行），<code>thread_spawn</code> 只能在程序运行中调用；工作函数应尽快返回，避免长时间阻塞拖慢舞台刷新。
+  </div>
+</div>
+</section>
+
 <footer>
   <div class="container">
-    <p><a href="index.html">← 返回首页</a> · Objector v1.0.4 · 用积木搭建无限创意</p>
+    <p><a href="index.html">← 返回首页</a> · Objector v1.0.35 · 用积木搭建无限创意</p>
   </div>
 </footer>
 
