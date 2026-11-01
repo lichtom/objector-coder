@@ -227,7 +227,6 @@ html[lang="en"] .mode-card.featured::after{content:'Recommended'}
       <div class="nav-links">
         <a href="#features" data-i18n="nav.features">功能特性</a>
         <a href="#v1035" data-i18n="nav.v1035">v1.0.35 新特性</a>
-        <a href="#v1034" data-i18n="nav.v1034">v1.0.34 新特性</a>
         <a href="#modules" data-i18n="nav.modules">积木模块</a>
         <a href="#modes" data-i18n="nav.modes">编辑模式</a>
         <a href="https://lichtom.github.io/objector-coder/blocks-guide/" data-i18n="nav.blocksGuide">📖 积木指南</a>
@@ -438,41 +437,6 @@ html[lang="en"] .mode-card.featured::after{content:'Recommended'}
         <h3 data-i18n="v1035.c3.title">内置协作式多线程</h3>
         <p data-i18n="v1035.c3.desc">三种语言通用 thread_spawn / thread_kill / thread_list / thread_id，可直接把 ALB 闭包、Python def/lambda 交给调度器按周期执行。</p>
         <span class="feature-tag" style="background:rgba(249,226,175,.15);color:#f9e2af" data-i18n="v1035.c3.tag">多线程</span>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- What's New in v1.0.34 -->
-<section id="v1034" style="background:linear-gradient(180deg,var(--bg2),var(--bg))">
-  <div class="container">
-    <div class="section-header reveal">
-      <div class="section-tag" data-i18n="v1034.tag">🆕 v1.0.34 新特性</div>
-      <h2 class="section-title" data-i18n="v1034.title">micro:bit 模拟器 + 字母大小写区分 + 模式布局优化</h2>
-      <p class="section-desc" data-i18n="v1034.desc">内置 micro:bit 硬件模拟器，支持 5×5 LED 矩阵、A/B 按钮、GPIO 引脚和传感器模拟，无需真实设备即可调试积木程序</p>
-    </div>
-    <div class="feature-grid">
-
-      <div class="feature-card reveal">
-        <div class="feature-icon" style="background:rgba(108,92,231,.15)">🎮</div>
-        <h3 data-i18n="v1034.c1.title">micro:bit 硬件模拟器</h3>
-        <p data-i18n="v1034.c1.desc">完整模拟 micro:bit 主板，包含 5×5 LED 矩阵（0-9 亮度等级）、A/B 按钮、19 个 GPIO 引脚（OUT/PWM/IN 模式切换）和 6 种传感器数据。</p>
-        <span class="feature-tag" style="background:rgba(108,92,231,.15);color:var(--accent)" data-i18n="v1034.c1.tag">模拟器</span>
-      </div>
-
-      <div class="feature-card reveal">
-        <div class="feature-icon" style="background:rgba(166,227,161,.15)">📝</div>
-        <h3 data-i18n="v1034.c2.title">字母大小写区分</h3>
-        <p data-i18n="v1034.c2.desc">LED 矩阵显示完整支持 26 个大写字母（5 行全高度）和 26 个小写字母（3 行紧凑高度），文字滚动时大小写视觉明确区分。</p>
-        <span class="feature-tag" style="background:rgba(166,227,161,.15);color:#a6e3a1" data-i18n="v1034.c2.tag">显示</span>
-      </div>
-
-      <div class="feature-card reveal">
-        <div class="feature-icon" style="background:rgba(249,226,175,.15)">🔧</div>
-        <h3 data-i18n="v1034.c3.title">模式布局优化</h3>
-        <p data-i18n="v1034.c3.desc">实时模式隐藏角色栏和音频栏，模拟器填满右侧；上传模式右侧栏左右分栏，左侧代码翻译，右侧模拟器面板。</p>
-        <span class="feature-tag" style="background:rgba(249,226,175,.15);color:#f9e2af" data-i18n="v1034.c3.tag">布局</span>
       </div>
 
     </div>
@@ -769,7 +733,7 @@ window.addEventListener('mousemove', (e) => {
 const i18n = {
   'zh-CN': {
     'pageTitle': 'Objector - 图形化积木编程编辑器',
-    'nav.features': '功能特性', 'nav.v1025beta': 'v1.0.25.beta 新特性', 'nav.modules': '积木模块',
+    'nav.features': '功能特性', 'nav.modules': '积木模块',
     'nav.modes': '编辑模式', 'nav.blocksGuide': '📖 积木指南', 'nav.extensionApi': '📖 扩展API',
     'nav.download': '立即下载',
     'hero.badge': 'v1.0.35 桌面版 · 开源免费',
@@ -824,20 +788,6 @@ const i18n = {
     'features.c15.title': '交互式教程',
     'features.c15.desc': '内置交互式入门教程，逐步引导新用户上手。高亮显示 UI 元素，让学习过程更加直观有趣。',
     'features.c15.tag': '入门友好',
-    'v1025beta.tag': '🆕 v1.0.25.beta 新特性', 'v1025beta.title': '设置面板 + 主题系统 + 协作管理',
-    'v1025beta.desc': '全局设置面板、6种内置主题、自定义CSS编辑器、协作管理、Bug修复',
-    'v1025beta.c1.title': '全局设置面板',
-    'v1025beta.c1.desc': '全新的设置界面，支持外观、编辑器、AI、关于四个标签页，集中管理所有应用配置。',
-    'v1025beta.c1.tag': '设置',
-    'v1025beta.c2.title': '6种内置主题',
-    'v1025beta.c2.desc': '提供默认、深色、浅色、Solarized、Nord、Dracula 六种精心设计的主题，一键切换，实时预览。',
-    'v1025beta.c2.tag': '主题',
-    'v1025beta.c3.title': '自定义CSS编辑器',
-    'v1025beta.c3.desc': '内置CSS编辑器，支持实时预览和重置，让你可以完全自定义应用的外观样式。',
-    'v1025beta.c3.tag': '自定义',
-    'v1025beta.c4.title': '协作管理',
-    'v1025beta.c4.desc': '登录后即可使用协作功能：推送进度、推送到分支、查看人员、分享链接，基于 Supabase 云端同步。',
-    'v1025beta.c4.tag': '协作',
     'modules.tag': '🧱 积木模块', 'modules.title': '12 大功能模块', 'modules.desc': '覆盖编程学习的方方面面',
     'modules.names': ['事件','运动','外观','控制','运算','变量','函数','面向对象','列表','声音','3D','传感'],
     'modules.counts': ['程序入口 · 消息触发','移动 · 物理 · 追踪','造型 · 对话 · 可见性','循环 · 条件 · 延时','数学 · 逻辑 · 字符串','赋值 · 自增 · 类型转换','定义 · 调用 · 返回值','类 · 继承 · 属性','增删 · 遍历 · 查询','播放 · 停止 · 音量','网格 · 相机 · 场景','鼠标 · 键盘 · 碰撞'],
@@ -857,7 +807,7 @@ const i18n = {
     'tech.osVal': 'Windows 10+ / Linux x64 / macOS 11+',
     'tech.install': '安装方式', 'tech.installVal': '绿色免安装 / 安装包',
     'download.tag': '📥 立即下载', 'download.title': '开始你的创意之旅',
-    'nav.v1034': 'v1.0.34 新特性', 'v1034.tag': '🆕 v1.0.34 新特性', 'v1034.title': 'micro:bit 模拟器 + 字母大小写区分 + 模式布局优化', 'v1034.desc': '内置 micro:bit 硬件模拟器，支持 5×5 LED 矩阵、A/B 按钮、GPIO 引脚和传感器模拟，无需真实设备即可调试积木程序', 'v1034.c1.title': 'micro:bit 硬件模拟器', 'v1034.c1.desc': '完整模拟 micro:bit 主板，包含 5×5 LED 矩阵（0-9 亮度等级）、A/B 按钮、19 个 GPIO 引脚（OUT/PWM/IN 模式切换）和 6 种传感器数据。', 'v1034.c1.tag': '模拟器', 'v1034.c2.title': '字母大小写区分', 'v1034.c2.desc': 'LED 矩阵显示完整支持 26 个大写字母（5 行全高度）和 26 个小写字母（3 行紧凑高度），文字滚动时大小写视觉明确区分。', 'v1034.c2.tag': '显示', 'v1034.c3.title': '模式布局优化', 'v1034.c3.desc': '实时模式隐藏角色栏和音频栏，模拟器填满右侧；上传模式右侧栏左右分栏，左侧代码翻译，右侧模拟器面板。', 'v1034.c3.tag': '布局', 'nav.v1035': 'v1.0.35 新特性', 'v1035.tag': '🆕 v1.0.35 新特性', 'v1035.title': '代码编程模式重构 + ALB 自研语言 + 内置多线程', 'v1035.desc': '用代码写 Objector 游戏：Python / JavaScript / ALB 三种语言，舞台、角色、声音照常保留，并新增跨语言协作式多线程函数', 'v1035.c1.title': '代码编程模式（保留舞台）', 'v1035.c1.desc': '子模式改为 Python / JavaScript / ALB，逐帧执行代码直接驱动角色运动、造型、声音与侦测，舞台在独立窗口实时同步。', 'v1035.c1.tag': '代码模式', 'v1035.c2.title': 'ALB 自研语言内置', 'v1035.c2.desc': 'Objector 独有 s-表达式语言解释器随应用打包，140+ 内建函数、编辑器语法高亮与自动补全，可从宿主注入自定义常量、变量与函数。', 'v1035.c2.tag': 'ALB', 'v1035.c3.title': '内置协作式多线程', 'v1035.c3.desc': '三种语言通用 thread_spawn / thread_kill / thread_list / thread_id，可直接把 ALB 闭包、Python def/lambda 交给调度器按周期执行。', 'v1035.c3.tag': '多线程', 'download.version': '版本 1.0.35 · 发布于 2026', 'download.macNote': 'macOS 当前最新版：v1.0.34',
+    'nav.v1035': 'v1.0.35 新特性', 'v1035.tag': '🆕 v1.0.35 新特性', 'v1035.title': '代码编程模式重构 + ALB 自研语言 + 内置多线程', 'v1035.desc': '用代码写 Objector 游戏：Python / JavaScript / ALB 三种语言，舞台、角色、声音照常保留，并新增跨语言协作式多线程函数', 'v1035.c1.title': '代码编程模式（保留舞台）', 'v1035.c1.desc': '子模式改为 Python / JavaScript / ALB，逐帧执行代码直接驱动角色运动、造型、声音与侦测，舞台在独立窗口实时同步。', 'v1035.c1.tag': '代码模式', 'v1035.c2.title': 'ALB 自研语言内置', 'v1035.c2.desc': 'Objector 独有 s-表达式语言解释器随应用打包，140+ 内建函数、编辑器语法高亮与自动补全，可从宿主注入自定义常量、变量与函数。', 'v1035.c2.tag': 'ALB', 'v1035.c3.title': '内置协作式多线程', 'v1035.c3.desc': '三种语言通用 thread_spawn / thread_kill / thread_list / thread_id，可直接把 ALB 闭包、Python def/lambda 交给调度器按周期执行。', 'v1035.c3.tag': '多线程', 'download.version': '版本 1.0.35 · 发布于 2026', 'download.macNote': 'macOS 当前最新版：v1.0.34',
     'download.desc': '免费下载，无需注册。支持 Windows、Linux 和 macOS 平台。',
     'download.winReq': 'Windows 10 及以上 · x64',
     'download.installer': '安装包 (.exe)', 'download.zip': '压缩包 (.zip)',
@@ -871,7 +821,7 @@ const i18n = {
   },
   'en': {
     'pageTitle': 'Objector - Visual Block Programming Editor',
-    'nav.features': 'Features', 'nav.v1025beta': "What's New v1.0.25.beta", 'nav.modules': 'Block Modules',
+    'nav.features': 'Features', 'nav.modules': 'Block Modules',
     'nav.modes': 'Edit Modes', 'nav.blocksGuide': '📖 Blocks Guide', 'nav.extensionApi': '📖 Extension API',
     'nav.download': 'Download',
     'hero.badge': 'v1.0.35 Desktop · Open Source & Free',
@@ -926,20 +876,6 @@ const i18n = {
     'features.c15.title': 'Interactive Tutorial',
     'features.c15.desc': 'Built-in interactive tutorial to guide new users step by step. Highlighted UI elements make learning more intuitive and fun.',
     'features.c15.tag': 'Beginner Friendly',
-    'v1025beta.tag': '🆕 v1.0.25.beta New Features', 'v1025beta.title': 'Settings Panel + Theme System + Collaboration',
-    'v1025beta.desc': 'Global settings panel, 6 built-in themes, custom CSS editor, collaboration, bug fixes',
-    'v1025beta.c1.title': 'Global Settings Panel',
-    'v1025beta.c1.desc': 'Brand new settings interface with four tabs: Appearance, Editor, AI, and About. Centralized management of all app configurations.',
-    'v1025beta.c1.tag': 'Settings',
-    'v1025beta.c2.title': '6 Built-in Themes',
-    'v1025beta.c2.desc': 'Six carefully designed themes: Default, Dark, Light, Solarized, Nord, and Dracula. One-click switching with real-time preview.',
-    'v1025beta.c2.tag': 'Themes',
-    'v1025beta.c3.title': 'Custom CSS Editor',
-    'v1025beta.c3.desc': 'Built-in CSS editor with real-time preview and reset functionality, allowing you to fully customize the app appearance.',
-    'v1025beta.c3.tag': 'Custom',
-    'v1025beta.c4.title': 'Collaboration',
-    'v1025beta.c4.desc': 'Collaboration features after login: push progress, push to branches, view members, share links, powered by Supabase cloud sync.',
-    'v1025beta.c4.tag': 'Collaboration',
     'modules.tag': '🧱 Block Modules', 'modules.title': '12 Feature Modules', 'modules.desc': 'Covering all aspects of programming',
     'modules.names': ['Events','Motion','Looks','Control','Operators','Variables','Functions','OOP','Lists','Sound','3D','Sensing'],
     'modules.counts': ['Entry Points · Messages','Move · Physics · Tracking','Costumes · Dialog · Visibility','Loops · Conditions · Delays','Math · Logic · Strings','Assignment · Increment · Type Cast','Define · Call · Return','Class · Inherit · Properties','Add · Remove · Iterate','Play · Stop · Volume','Mesh · Camera · Scene','Mouse · Keyboard · Collision'],
@@ -959,7 +895,7 @@ const i18n = {
     'tech.osVal': 'Windows 10+ / Linux x64 / macOS 11+',
     'tech.install': 'Installation', 'tech.installVal': 'Portable / Installer',
     'download.tag': '📥 Download Now', 'download.title': 'Start Your Creative Journey',
-    'nav.v1034': 'v1.0.34 What\'s New', 'v1034.tag': '🆕 v1.0.34 What\'s New', 'v1034.title': 'micro:bit Simulator + Case-Sensitive Letters + Layout Optimization', 'v1034.desc': 'Built-in micro:bit hardware simulator with 5×5 LED matrix, A/B buttons, GPIO pins and sensor simulation, debug block programs without real hardware', 'v1034.c1.title': 'micro:bit Hardware Simulator', 'v1034.c1.desc': 'Full micro:bit board simulation with 5×5 LED matrix (0-9 brightness levels), A/B buttons, 19 GPIO pins (OUT/PWM/IN mode switching) and 6 sensor types.', 'v1034.c1.tag': 'Simulator', 'v1034.c2.title': 'Case-Sensitive Letters', 'v1034.c2.desc': 'LED matrix supports 26 uppercase (5-row full height) and 26 lowercase (3-row compact) letters with clear visual distinction during text scrolling.', 'v1034.c2.tag': 'Display', 'v1034.c3.title': 'Mode Layout Optimization', 'v1034.c3.desc': 'Realtime mode hides sprite/audio panels, simulator fills right panel; Upload mode splits right panel into code editor (left) and simulator (right).', 'v1034.c3.tag': 'Layout', 'nav.v1035': 'v1.0.35 What\'s New', 'v1035.tag': '🆕 v1.0.35 What\'s New', 'v1035.title': 'Code Mode Revamp + ALB Language + Built-in Threads', 'v1035.desc': 'Write Objector games in code: Python / JavaScript / ALB, with stage, sprites and sound intact, plus new cross-language cooperative threading functions', 'v1035.c1.title': 'Code Mode (Stage Preserved)', 'v1035.c1.desc': 'Sub-modes now Python / JavaScript / ALB; frame-by-frame code drives sprite motion, costumes, sound and sensing while the stage syncs in a separate window.', 'v1035.c1.tag': 'Code Mode', 'v1035.c2.title': 'Built-in ALB Language', 'v1035.c2.desc': 'Objector\'s own s-expression language interpreter ships with the app: 140+ built-in functions, editor syntax highlighting & autocomplete, with custom constants/variables/functions injectable from the host.', 'v1035.c2.tag': 'ALB', 'v1035.c3.title': 'Built-in Cooperative Threads', 'v1035.c3.desc': 'thread_spawn / thread_kill / thread_list / thread_id work across all three languages; pass ALB closures or Python def/lambda functions straight to the scheduler.', 'v1035.c3.tag': 'Threading', 'download.version': 'Version 1.0.35 · Released 2026', 'download.macNote': 'Latest macOS build: v1.0.34',
+    'nav.v1035': 'v1.0.35 What\'s New', 'v1035.tag': '🆕 v1.0.35 What\'s New', 'v1035.title': 'Code Mode Revamp + ALB Language + Built-in Threads', 'v1035.desc': 'Write Objector games in code: Python / JavaScript / ALB, with stage, sprites and sound intact, plus new cross-language cooperative threading functions', 'v1035.c1.title': 'Code Mode (Stage Preserved)', 'v1035.c1.desc': 'Sub-modes now Python / JavaScript / ALB; frame-by-frame code drives sprite motion, costumes, sound and sensing while the stage syncs in a separate window.', 'v1035.c1.tag': 'Code Mode', 'v1035.c2.title': 'Built-in ALB Language', 'v1035.c2.desc': 'Objector\'s own s-expression language interpreter ships with the app: 140+ built-in functions, editor syntax highlighting & autocomplete, with custom constants/variables/functions injectable from the host.', 'v1035.c2.tag': 'ALB', 'v1035.c3.title': 'Built-in Cooperative Threads', 'v1035.c3.desc': 'thread_spawn / thread_kill / thread_list / thread_id work across all three languages; pass ALB closures or Python def/lambda functions straight to the scheduler.', 'v1035.c3.tag': 'Threading', 'download.version': 'Version 1.0.35 · Released 2026', 'download.macNote': 'Latest macOS build: v1.0.34',
     'download.desc': 'Free download, no registration required. Supports Windows, Linux, and macOS.',
     'download.winReq': 'Windows 10 and above · x64',
     'download.installer': 'Installer (.exe)', 'download.zip': 'Archive (.zip)',
