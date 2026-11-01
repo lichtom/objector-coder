@@ -226,6 +226,7 @@ html[lang="en"] .mode-card.featured::after{content:'Recommended'}
       <a href="#" class="nav-logo"><img src="https://lichtom.github.io/objector-coder/icon.svg" width="25"> Objector</a>
       <div class="nav-links">
         <a href="#features" data-i18n="nav.features">功能特性</a>
+        <a href="#v1035" data-i18n="nav.v1035">v1.0.35 新特性</a>
         <a href="#v1034" data-i18n="nav.v1034">v1.0.34 新特性</a>
         <a href="#modules" data-i18n="nav.modules">积木模块</a>
         <a href="#modes" data-i18n="nav.modes">编辑模式</a>
@@ -248,7 +249,7 @@ html[lang="en"] .mode-card.featured::after{content:'Recommended'}
   <div class="container">
     <div class="hero-badge">
       <span class="dot"></span>
-      <span data-i18n="hero.badge">v1.0.34 桌面版 · 开源免费</span>
+      <span data-i18n="hero.badge">v1.0.35 桌面版 · 开源免费</span>
     </div>
     <h1 data-i18n="hero.title">用积木搭建<br><span class="gradient">无限创意</span></h1>
     <p class="hero-sub" data-i18n="hero.sub">Objector 是一款强大的图形化积木编程编辑器，让零基础用户也能创作动画、游戏和交互式程序。从入门到专业开发，一站搞定。</p>
@@ -402,6 +403,41 @@ html[lang="en"] .mode-card.featured::after{content:'Recommended'}
         <h3 data-i18n="features.c15.title">交互式教程</h3>
         <p data-i18n="features.c15.desc">内置交互式入门教程，逐步引导新用户上手。高亮显示 UI 元素，让学习过程更加直观有趣。</p>
         <span class="feature-tag" style="background:rgba(162,155,254,.15);color:var(--accent2)" data-i18n="features.c15.tag">入门友好</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- What's New in v1.0.35 -->
+<section id="v1035" style="background:linear-gradient(180deg,var(--bg2),var(--bg))">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag" data-i18n="v1035.tag">🆕 v1.0.35 新特性</div>
+      <h2 class="section-title" data-i18n="v1035.title">代码编程模式重构 + ALB 自研语言 + 内置多线程</h2>
+      <p class="section-desc" data-i18n="v1035.desc">用代码写 Objector 游戏：Python / JavaScript / ALB 三种语言，舞台、角色、声音照常保留，并新增跳语言协作式多线程函数</p>
+    </div>
+    <div class="feature-grid">
+
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(108,92,231,.15)">⌨️</div>
+        <h3 data-i18n="v1035.c1.title">代码编程模式（保留舞台）</h3>
+        <p data-i18n="v1035.c1.desc">子模式改为 Python / JavaScript / ALB，逐帧执行代码直接驱动角色运动、造型、声音与侦测，舞台在独立窗口实时同步。</p>
+        <span class="feature-tag" style="background:rgba(108,92,231,.15);color:var(--accent)" data-i18n="v1035.c1.tag">代码模式</span>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(166,227,161,.15)">🧬</div>
+        <h3 data-i18n="v1035.c2.title">ALB 自研语言内置</h3>
+        <p data-i18n="v1035.c2.desc">Objector 独有 s-表达式语言解释器随应用打包，140+ 内建函数、编辑器语法高亮与自动补全，可从宿主注入自定义常量、变量与函数。</p>
+        <span class="feature-tag" style="background:rgba(166,227,161,.15);color:#a6e3a1" data-i18n="v1035.c2.tag">ALB</span>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(249,226,175,.15)">🧵</div>
+        <h3 data-i18n="v1035.c3.title">内置协作式多线程</h3>
+        <p data-i18n="v1035.c3.desc">三种语言通用 thread_spawn / thread_kill / thread_list / thread_id，可直接把 ALB 闭包、Python def/lambda 交给调度器按周期执行。</p>
+        <span class="feature-tag" style="background:rgba(249,226,175,.15);color:#f9e2af" data-i18n="v1035.c3.tag">多线程</span>
       </div>
 
     </div>
@@ -605,7 +641,7 @@ html[lang="en"] .mode-card.featured::after{content:'Recommended'}
     <div class="download-card reveal" style="padding:40px;">
       <div style="text-align:center;margin-bottom:32px;">
         <h3 style="margin-bottom:8px;">Objector</h3>
-        <div class="version" data-i18n="download.version">版本 1.0.34 · 发布于 2026</div>
+        <div class="version" data-i18n="download.version">版本 1.0.35 · 发布于 2026</div>
         <p style="margin-top:8px;" data-i18n="download.desc">免费下载，无需注册。支持 Windows、Linux 和 macOS 平台。</p>
       </div>
 
@@ -617,17 +653,17 @@ html[lang="en"] .mode-card.featured::after{content:'Recommended'}
           <img src="WindowsIcon.png" alt="Windows" style="width:48px;height:48px;margin-bottom:16px;">
           <h4 style="color:var(--accent2);margin-bottom:4px;font-size:18px;">Windows</h4>
           <p style="font-size:12px;color:var(--text-muted);margin-bottom:20px;" data-i18n="download.winReq">Windows 10 及以上 · x64</p>
-          <a href="https://github.com/lichtom/Objector/releases/download/v1.0.34/Objector-Setup-1.0.34.exe" class="download-btn" style="width:100%;justify-content:center;background:linear-gradient(to bottom,#8b5cf6,#ab93e4);">
+          <a href="https://github.com/lichtom/Objector/releases/download/v1.0.35/Objector-Setup-1.0.35.exe" class="download-btn" style="width:100%;justify-content:center;background:linear-gradient(to bottom,#8b5cf6,#ab93e4);">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span data-i18n="download.installer">安装包 (.exe)</span>
           </a>
-          <a href="https://github.com/lichtom/Objector/releases/download/v1.0.34/Objector-1.0.34-win.zip" class="download-btn" style="width:100%;justify-content:center;margin-top:10px;font-size:14px;padding:10px 24px;background:linear-gradient(135deg,#2d3436,#636e72);">
+          <a href="https://github.com/lichtom/Objector/releases/download/v1.0.35/Objector-1.0.35-win.zip" class="download-btn" style="width:100%;justify-content:center;margin-top:10px;font-size:14px;padding:10px 24px;background:linear-gradient(135deg,#2d3436,#636e72);">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span data-i18n="download.zip">压缩包 (.zip)</span>
           </a>
           <p style="font-size:11px;color:var(--text-muted);margin-top:12px;">
-            🇨🇳 <a href="https://mirror.ghproxy.com/https://github.com/lichtom/Objector/releases/download/v1.0.34/Objector-Setup-1.0.34.exe" style="color:var(--accent2);">镜像加速下载</a> ·
-            <a href="https://mirror.ghproxy.com/https://github.com/lichtom/Objector/releases/download/v1.0.34/Objector-1.0.34-win.zip" style="color:var(--accent2);">ZIP 镜像</a>
+            🇨🇳 <a href="https://mirror.ghproxy.com/https://github.com/lichtom/Objector/releases/download/v1.0.35/Objector-Setup-1.0.35.exe" style="color:var(--accent2);">镜像加速下载</a> ·
+            <a href="https://mirror.ghproxy.com/https://github.com/lichtom/Objector/releases/download/v1.0.35/Objector-1.0.35-win.zip" style="color:var(--accent2);">ZIP 镜像</a>
           </p>
         </div>
 
@@ -636,13 +672,13 @@ html[lang="en"] .mode-card.featured::after{content:'Recommended'}
           <img src="LinuxIcon.png" alt="Linux" style="width:48px;height:48px;margin-bottom:16px;">
           <h4 style="color:var(--accent2);margin-bottom:4px;font-size:18px;">Linux</h4>
           <p style="font-size:12px;color:var(--text-muted);margin-bottom:20px;">Ubuntu / Fedora / Arch · x64</p>
-          <a href="https://github.com/lichtom/Objector/releases/download/v1.0.34/objector-1.0.34.tar.gz" class="download-btn" style="width:100%;justify-content:center;background:linear-gradient(to bottom,#fdcb6e,#e17055);">
+          <a href="https://github.com/lichtom/Objector/releases/download/v1.0.35/objector-1.0.35.tar.gz" class="download-btn" style="width:100%;justify-content:center;background:linear-gradient(to bottom,#fdcb6e,#e17055);">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span data-i18n="download.linuxTar">压缩包 (.tar.gz)</span>
           </a>
           <p style="font-size:11px;color:var(--text-muted);margin-top:12px;">
             <span data-i18n="download.linuxReq">需要 libgtk-3 和 libnss3</span><br>
-            🇨🇳 <a href="https://mirror.ghproxy.com/https://github.com/lichtom/Objector/releases/download/v1.0.34/objector-1.0.34.tar.gz" style="color:var(--accent2);">镜像加速下载</a>
+            🇨🇳 <a href="https://mirror.ghproxy.com/https://github.com/lichtom/Objector/releases/download/v1.0.35/objector-1.0.35.tar.gz" style="color:var(--accent2);">镜像加速下载</a>
           </p>
         </div>
 
@@ -659,6 +695,7 @@ html[lang="en"] .mode-card.featured::after{content:'Recommended'}
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span data-i18n="download.macZip">压缩包 (.zip)</span>
           </a>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:12px;" data-i18n="download.macNote">macOS 当前最新版：v1.0.34</p>
         </div>
 
       </div>
@@ -735,7 +772,7 @@ const i18n = {
     'nav.features': '功能特性', 'nav.v1025beta': 'v1.0.25.beta 新特性', 'nav.modules': '积木模块',
     'nav.modes': '编辑模式', 'nav.blocksGuide': '📖 积木指南', 'nav.extensionApi': '📖 扩展API',
     'nav.download': '立即下载',
-    'hero.badge': 'v1.0.34 桌面版 · 开源免费',
+    'hero.badge': 'v1.0.35 桌面版 · 开源免费',
     'hero.title': '用积木搭建<br><span class="gradient">无限创意</span>',
     'hero.sub': 'Objector 是一款强大的图形化积木编程编辑器，让零基础用户也能创作动画、游戏和交互式程序。从入门到专业开发，一站搞定。',
     'hero.download': '免费下载', 'hero.learnMore': '了解更多',
@@ -820,7 +857,7 @@ const i18n = {
     'tech.osVal': 'Windows 10+ / Linux x64 / macOS 11+',
     'tech.install': '安装方式', 'tech.installVal': '绿色免安装 / 安装包',
     'download.tag': '📥 立即下载', 'download.title': '开始你的创意之旅',
-    'nav.v1034': 'v1.0.34 新特性', 'v1034.tag': '🆕 v1.0.34 新特性', 'v1034.title': 'micro:bit 模拟器 + 字母大小写区分 + 模式布局优化', 'v1034.desc': '内置 micro:bit 硬件模拟器，支持 5×5 LED 矩阵、A/B 按钮、GPIO 引脚和传感器模拟，无需真实设备即可调试积木程序', 'v1034.c1.title': 'micro:bit 硬件模拟器', 'v1034.c1.desc': '完整模拟 micro:bit 主板，包含 5×5 LED 矩阵（0-9 亮度等级）、A/B 按钮、19 个 GPIO 引脚（OUT/PWM/IN 模式切换）和 6 种传感器数据。', 'v1034.c1.tag': '模拟器', 'v1034.c2.title': '字母大小写区分', 'v1034.c2.desc': 'LED 矩阵显示完整支持 26 个大写字母（5 行全高度）和 26 个小写字母（3 行紧凑高度），文字滚动时大小写视觉明确区分。', 'v1034.c2.tag': '显示', 'v1034.c3.title': '模式布局优化', 'v1034.c3.desc': '实时模式隐藏角色栏和音频栏，模拟器填满右侧；上传模式右侧栏左右分栏，左侧代码翻译，右侧模拟器面板。', 'v1034.c3.tag': '布局', 'download.version': '版本 1.0.34 · 发布于 2026',
+    'nav.v1034': 'v1.0.34 新特性', 'v1034.tag': '🆕 v1.0.34 新特性', 'v1034.title': 'micro:bit 模拟器 + 字母大小写区分 + 模式布局优化', 'v1034.desc': '内置 micro:bit 硬件模拟器，支持 5×5 LED 矩阵、A/B 按钮、GPIO 引脚和传感器模拟，无需真实设备即可调试积木程序', 'v1034.c1.title': 'micro:bit 硬件模拟器', 'v1034.c1.desc': '完整模拟 micro:bit 主板，包含 5×5 LED 矩阵（0-9 亮度等级）、A/B 按钮、19 个 GPIO 引脚（OUT/PWM/IN 模式切换）和 6 种传感器数据。', 'v1034.c1.tag': '模拟器', 'v1034.c2.title': '字母大小写区分', 'v1034.c2.desc': 'LED 矩阵显示完整支持 26 个大写字母（5 行全高度）和 26 个小写字母（3 行紧凑高度），文字滚动时大小写视觉明确区分。', 'v1034.c2.tag': '显示', 'v1034.c3.title': '模式布局优化', 'v1034.c3.desc': '实时模式隐藏角色栏和音频栏，模拟器填满右侧；上传模式右侧栏左右分栏，左侧代码翻译，右侧模拟器面板。', 'v1034.c3.tag': '布局', 'nav.v1035': 'v1.0.35 新特性', 'v1035.tag': '🆕 v1.0.35 新特性', 'v1035.title': '代码编程模式重构 + ALB 自研语言 + 内置多线程', 'v1035.desc': '用代码写 Objector 游戏：Python / JavaScript / ALB 三种语言，舞台、角色、声音照常保留，并新增跨语言协作式多线程函数', 'v1035.c1.title': '代码编程模式（保留舞台）', 'v1035.c1.desc': '子模式改为 Python / JavaScript / ALB，逐帧执行代码直接驱动角色运动、造型、声音与侦测，舞台在独立窗口实时同步。', 'v1035.c1.tag': '代码模式', 'v1035.c2.title': 'ALB 自研语言内置', 'v1035.c2.desc': 'Objector 独有 s-表达式语言解释器随应用打包，140+ 内建函数、编辑器语法高亮与自动补全，可从宿主注入自定义常量、变量与函数。', 'v1035.c2.tag': 'ALB', 'v1035.c3.title': '内置协作式多线程', 'v1035.c3.desc': '三种语言通用 thread_spawn / thread_kill / thread_list / thread_id，可直接把 ALB 闭包、Python def/lambda 交给调度器按周期执行。', 'v1035.c3.tag': '多线程', 'download.version': '版本 1.0.35 · 发布于 2026', 'download.macNote': 'macOS 当前最新版：v1.0.34',
     'download.desc': '免费下载，无需注册。支持 Windows、Linux 和 macOS 平台。',
     'download.winReq': 'Windows 10 及以上 · x64',
     'download.installer': '安装包 (.exe)', 'download.zip': '压缩包 (.zip)',
@@ -837,7 +874,7 @@ const i18n = {
     'nav.features': 'Features', 'nav.v1025beta': "What's New v1.0.25.beta", 'nav.modules': 'Block Modules',
     'nav.modes': 'Edit Modes', 'nav.blocksGuide': '📖 Blocks Guide', 'nav.extensionApi': '📖 Extension API',
     'nav.download': 'Download',
-    'hero.badge': 'v1.0.34 Desktop · Open Source & Free',
+    'hero.badge': 'v1.0.35 Desktop · Open Source & Free',
     'hero.title': 'Build with Blocks<br><span class="gradient">Unlimited Creativity</span>',
     'hero.sub': 'Objector is a powerful visual block programming editor that enables even beginners to create animations, games, and interactive programs. From beginner to professional development, all in one place.',
     'hero.download': 'Free Download', 'hero.learnMore': 'Learn More',
@@ -922,7 +959,7 @@ const i18n = {
     'tech.osVal': 'Windows 10+ / Linux x64 / macOS 11+',
     'tech.install': 'Installation', 'tech.installVal': 'Portable / Installer',
     'download.tag': '📥 Download Now', 'download.title': 'Start Your Creative Journey',
-    'nav.v1034': 'v1.0.34 What\'s New', 'v1034.tag': '🆕 v1.0.34 What\'s New', 'v1034.title': 'micro:bit Simulator + Case-Sensitive Letters + Layout Optimization', 'v1034.desc': 'Built-in micro:bit hardware simulator with 5×5 LED matrix, A/B buttons, GPIO pins and sensor simulation, debug block programs without real hardware', 'v1034.c1.title': 'micro:bit Hardware Simulator', 'v1034.c1.desc': 'Full micro:bit board simulation with 5×5 LED matrix (0-9 brightness levels), A/B buttons, 19 GPIO pins (OUT/PWM/IN mode switching) and 6 sensor types.', 'v1034.c1.tag': 'Simulator', 'v1034.c2.title': 'Case-Sensitive Letters', 'v1034.c2.desc': 'LED matrix supports 26 uppercase (5-row full height) and 26 lowercase (3-row compact) letters with clear visual distinction during text scrolling.', 'v1034.c2.tag': 'Display', 'v1034.c3.title': 'Mode Layout Optimization', 'v1034.c3.desc': 'Realtime mode hides sprite/audio panels, simulator fills right panel; Upload mode splits right panel into code editor (left) and simulator (right).', 'v1034.c3.tag': 'Layout', 'download.version': 'Version 1.0.34 · Released 2026',
+    'nav.v1034': 'v1.0.34 What\'s New', 'v1034.tag': '🆕 v1.0.34 What\'s New', 'v1034.title': 'micro:bit Simulator + Case-Sensitive Letters + Layout Optimization', 'v1034.desc': 'Built-in micro:bit hardware simulator with 5×5 LED matrix, A/B buttons, GPIO pins and sensor simulation, debug block programs without real hardware', 'v1034.c1.title': 'micro:bit Hardware Simulator', 'v1034.c1.desc': 'Full micro:bit board simulation with 5×5 LED matrix (0-9 brightness levels), A/B buttons, 19 GPIO pins (OUT/PWM/IN mode switching) and 6 sensor types.', 'v1034.c1.tag': 'Simulator', 'v1034.c2.title': 'Case-Sensitive Letters', 'v1034.c2.desc': 'LED matrix supports 26 uppercase (5-row full height) and 26 lowercase (3-row compact) letters with clear visual distinction during text scrolling.', 'v1034.c2.tag': 'Display', 'v1034.c3.title': 'Mode Layout Optimization', 'v1034.c3.desc': 'Realtime mode hides sprite/audio panels, simulator fills right panel; Upload mode splits right panel into code editor (left) and simulator (right).', 'v1034.c3.tag': 'Layout', 'nav.v1035': 'v1.0.35 What\'s New', 'v1035.tag': '🆕 v1.0.35 What\'s New', 'v1035.title': 'Code Mode Revamp + ALB Language + Built-in Threads', 'v1035.desc': 'Write Objector games in code: Python / JavaScript / ALB, with stage, sprites and sound intact, plus new cross-language cooperative threading functions', 'v1035.c1.title': 'Code Mode (Stage Preserved)', 'v1035.c1.desc': 'Sub-modes now Python / JavaScript / ALB; frame-by-frame code drives sprite motion, costumes, sound and sensing while the stage syncs in a separate window.', 'v1035.c1.tag': 'Code Mode', 'v1035.c2.title': 'Built-in ALB Language', 'v1035.c2.desc': 'Objector\'s own s-expression language interpreter ships with the app: 140+ built-in functions, editor syntax highlighting & autocomplete, with custom constants/variables/functions injectable from the host.', 'v1035.c2.tag': 'ALB', 'v1035.c3.title': 'Built-in Cooperative Threads', 'v1035.c3.desc': 'thread_spawn / thread_kill / thread_list / thread_id work across all three languages; pass ALB closures or Python def/lambda functions straight to the scheduler.', 'v1035.c3.tag': 'Threading', 'download.version': 'Version 1.0.35 · Released 2026', 'download.macNote': 'Latest macOS build: v1.0.34',
     'download.desc': 'Free download, no registration required. Supports Windows, Linux, and macOS.',
     'download.winReq': 'Windows 10 and above · x64',
     'download.installer': 'Installer (.exe)', 'download.zip': 'Archive (.zip)',
