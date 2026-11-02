@@ -96,6 +96,8 @@ tr:nth-child(even) td { background:rgba(49,50,68,.4); }
   <a data-go="subblocks">子代码槽 subBlocks</a>
   <a data-go="getlabel">动态标签 getLabel</a>
   <a data-go="dynamic-params">可扩展输入 dynamicParams</a>
+  <a data-go="i18n-labels">多语言标签 labels</a>
+  <a data-go="code-mode">代码模式翻译 code</a>
   <h3>执行器</h3>
   <a data-go="executor">执行器函数</a>
   <a data-go="executor-params">params 对象</a>
@@ -144,6 +146,9 @@ tr:nth-child(even) td { background:rgba(49,50,68,.4); }
       <span class="kw">label</span>: <span class="str">'打招呼 {name}'</span>,
       <span class="kw">shape</span>: <span class="str">'stack'</span>,
       <span class="kw">params</span>: [{ <span class="kw">name</span>: <span class="str">'name'</span>, <span class="kw">type</span>: <span class="str">'string'</span>, <span class="kw">default</span>: <span class="str">'世界'</span> }],
+      <span class="cm">// 可选：多语言标签与代码模式调用名</span>
+      <span class="kw">labels</span>: { <span class="kw">en</span>: <span class="str">'Say hello to {name}'</span> },
+      <span class="kw">code_exp</span>: { <span class="kw">python</span>: <span class="str">'hello'</span>, <span class="kw">ALB</span>: <span class="str">'hello'</span>, <span class="kw">JavaScript</span>: <span class="str">'hello'</span> },
     },
   ],
   <span class="kw">executors</span>: {
@@ -201,9 +206,14 @@ tr:nth-child(even) td { background:rgba(49,50,68,.4); }
   <tr><td><code>ports</code></td><td>Object</td><td></td><td>连接端口（默认自动推断）</td></tr>
   <tr><td><code>subBlocks</code></td><td>Array</td><td></td><td>C 型积木的子代码槽名</td></tr>
   <tr><td><code>getLabel</code></td><td>function</td><td></td><td>动态标签函数</td></tr>
+  <tr><td><code>labels</code></td><td>Object</td><td></td><td>内联多语言标签，如 <code>{ en: 'Say hello {name}' }</code> <a data-go="i18n-labels" style="color:var(--accent);margin-left:4px;">→ 详情</a></td></tr>
+  <tr><td><code>labelKey</code></td><td>string</td><td></td><td>走内置 i18n 数据表的标签键（一般扩展不需要）</td></tr>
   <tr><td><code>dynamicParams</code></td><td>boolean</td><td></td><td>启用可扩展输入（右键菜单添加参数）</td></tr>
   <tr><td><code>dynamicParamsPrefix</code></td><td>string</td><td></td><td>动态参数名前缀（默认 <code>item</code>）</td></tr>
   <tr><td><code>dynamicParamsDefault</code></td><td>any</td><td></td><td>动态参数默认值（默认 <code>''</code>）</td></tr>
+  <tr><td><code>code_exp</code></td><td>Object</td><td></td><td>代码模式三语言函数名 <code>{ python, ALB, JavaScript }</code> <a data-go="code-mode" style="color:var(--accent);margin-left:4px;">→ 详情</a></td></tr>
+  <tr><td><code>code</code></td><td>Object</td><td></td><td>代码模式内联翻译 <code>{ python, javascript, alb }</code> <a data-go="code-mode" style="color:var(--accent);margin-left:4px;">→ 详情</a></td></tr>
+  <tr><td><code>codeFn</code></td><td>function</td><td></td><td>动态组织代码翻译 <code>(def, lang) =&gt; lines</code></td></tr>
 </table>
 </div>
 
@@ -326,6 +336,93 @@ tr:nth-child(even) td { background:rgba(49,50,68,.4); }
   <span class="kw">getLabel</span>: <span class="kw">function</span>(block) { <span class="cm">/* 见上方 */</span> },
 }</code></pre>
 <div class="tip">添加的参数名自动为 <code>arg1</code>、<code>arg2</code>...（取决于 prefix），在执行器中通过 <code>params.arg1</code> 访问。</div>
+</div>
+
+<div class="doc-section" id="sec-i18n-labels">
+<h2>多语言标签 labels</h2>
+<p>积木可以在注册时<strong>内联声明各语言的显示文本</strong>，新增语言无需修改任何集中式 i18n 数据文件。<code>label</code> 作为中文基准，<code>labels</code> 提供其它语言映射：</p>
+<pre><code>{
+  <span class="kw">type</span>: <span class="str">'ext_hello'</span>,
+  <span class="kw">label</span>: <span class="str">'打招呼 {name}'</span>,                 <span class="cm">// 中文基准</span>
+  <span class="kw">labels</span>: {                                <span class="cm">// 其它语言（可只提供部分）</span>
+    <span class="kw">en</span>: <span class="str">'Say hello to {name}'</span>,
+    <span class="kw">ja</span>: <span class="str">'{name} に挨拶'</span>,
+  },
+  <span class="kw">shape</span>: <span class="str">'stack'</span>,
+}</code></pre>
+<h3>标签解析优先级</h3>
+<table>
+  <tr><th>顺序</th><th>来源</th><th>说明</th></tr>
+  <tr><td>1</td><td><code>getLabel(block)</code></td><td>动态标签函数，优先级最高</td></tr>
+  <tr><td>2</td><td><code>labels[当前语言]</code></td><td>内联多语言映射命中</td></tr>
+  <tr><td>3</td><td><code>labelKey</code></td><td>集中式 i18n 键（可选）</td></tr>
+  <tr><td>4</td><td><code>label</code></td><td>中文基准文本兜底</td></tr>
+</table>
+<h3>语言查找规则 i18n.pick</h3>
+<p>映射按 <code>当前 locale → locale 主语言段(en-US→en) → zh-CN → fallback</code> 逐级查找，因此只提供 <code>en</code> 即可覆盖所有 <code>en-*</code> 区域设置。</p>
+<pre><code><span class="cm">// 在 getLabel 中构建动态多语言文本</span>
+<span class="kw">getLabel</span>: <span class="kw">function</span>(block) {
+  <span class="kw">return</span> i18n.<span class="fn">L</span>(<span class="str">'定义函数 {name}'</span>, <span class="str">'Define function {name}'</span>);   <span class="cm">// 两参数写法</span>
+  <span class="cm">// 或多语言映射写法：</span>
+  <span class="cm">// return i18n.L({ 'zh-CN': '定义函数', en: 'Define', ja: '定義' });</span>
+}</code></pre>
+<div class="tip">JSON 格式扩展同样支持 <code>labels</code>，直接写成普通对象字段即可。</div>
+<div class="warn">切换界面语言只影响积木面板显示，<strong>不会重写已生成的代码</strong>；如需重新翻译，请在代码模式重新生成一次。</div>
+</div>
+
+<div class="doc-section" id="sec-code-mode">
+<h2>代码模式翻译 code / codeFn</h2>
+<p>代码编程模式会把积木翻译成 Python / JavaScript / ALB 三种语言文本。扩展开发者有三档可控的写法，粒度由细到粗：</p>
+<h3>1. code_exp — 仅指定调用名</h3>
+<p>最简方式，只给出积木在三语言中的函数名，参数按定义顺序自动作为位置参数传递：</p>
+<pre><code>{
+  <span class="kw">type</span>: <span class="str">'ext_add'</span>, <span class="kw">label</span>: <span class="str">'加法 {a} {b}'</span>, <span class="kw">shape</span>: <span class="str">'reporter'</span>,
+  <span class="kw">code_exp</span>: { <span class="kw">python</span>: <span class="str">'add'</span>, <span class="kw">ALB</span>: <span class="str">'add'</span>, <span class="kw">JavaScript</span>: <span class="str">'add'</span> },
+}</code></pre>
+<table>
+  <tr><th>代码模式</th><th>调用写法</th></tr>
+  <tr><td>JavaScript</td><td><code>ext.add(a, b)</code>（以扩展名作为命名空间）</td></tr>
+  <tr><td>Python</td><td><code>ext.add(a, b)</code></td></tr>
+  <tr><td>ALB</td><td><code>(ext_add a b)</code>（前缀式变参调用）</td></tr>
+</table>
+<h3>2. code — 内联代码模板</h3>
+<p>需要自定义表达式结构（如运算符、特殊调用形式）时，直接给出每语言的代码模板。占位符 <code>{参数名}</code> 会被替换为该语言的字面量，<code>{&amp;参数名}</code> 则原样输出参数代码：</p>
+<pre><code>{
+  <span class="kw">type</span>: <span class="str">'op_add'</span>,
+  <span class="kw">code</span>: {
+    <span class="kw">python</span>:     <span class="str">'({a} + {b})'</span>,
+    <span class="kw">javascript</span>: <span class="str">'({a} + {b})'</span>,
+    <span class="kw">alb</span>:        <span class="str">'(+ {a} {b})'</span>,
+  },
+}</code></pre>
+<p>值也可以写成行数组，便于生成多行语句。</p>
+<h3>3. codeFn — 完全自定义生成</h3>
+<p>当模板不足以表达（条件分支、循环包装等）时，用函数返回代码行：</p>
+<pre><code>{
+  <span class="kw">type</span>: <span class="str">'control_repeat'</span>,
+  <span class="kw">codeFn</span>: <span class="kw">function</span>(def, lang) {
+    <span class="kw">if</span> (lang === <span class="str">'python'</span>) <span class="kw">return</span> [<span class="str">'for _ in range({times}):'</span>];
+    <span class="kw">if</span> (lang === <span class="str">'javascript'</span>) <span class="kw">return</span> [<span class="str">'for (let i=0;i&lt;{times};i++) {'</span>];
+    <span class="kw">return</span> [<span class="str">'(repeat {times}'</span>];
+  },
+}</code></pre>
+<h3>解析优先级（CodeModeBlocks.toCode）</h3>
+<table>
+  <tr><th>顺序</th><th>来源</th><th>产物</th></tr>
+  <tr><td>1</td><td>内联 <code>code</code> / <code>codeFn</code></td><td>精确代码模板</td></tr>
+  <tr><td>2</td><td>扩展 <code>code_exp</code></td><td>扩展命名空间调用</td></tr>
+  <tr><td>3</td><td>内置映射表 M</td><td>核心积木特例</td></tr>
+  <tr><td>4</td><td>通用桥 <code>run_block</code></td><td>跨语言可执行兜底</td></tr>
+  <tr><td>5</td><td>说明注释</td><td>不可翻译时</td></tr>
+</table>
+<h3>通用桥 run_block</h3>
+<p>未写以上任何属性的积木会自动降级为通用桥调用，任意积木都能在三语言里执行，由运行时的 <code>Executor.execBlockType</code> 真实驱动：</p>
+<pre><code><span class="cm">// JS / Python</span>
+<span class="fn">run_block</span>(<span class="str">'ext_hello'</span>, <span class="str">'name'</span>, <span class="str">'世界'</span>)
+<span class="cm">// ALB</span>
+(<span class="fn">run_block</span> <span class="str">"ext_hello"</span> <span class="str">"name"</span> <span class="str">"世界"</span>)</code></pre>
+<div class="tip">把积木拖入代码框即可看到它当前会被翻译成的代码，便于调试 <code>code</code> / <code>codeFn</code>。</div>
+<div class="warn">hat（事件头）、c-block（控制槽）、以 block 为参数 的积木无法翻译为语句，会输出说明注释；异步 reporter 在代码模式返回的是「上一帧结果」。</div>
 </div>
 
 <div class="doc-section" id="sec-executor">
