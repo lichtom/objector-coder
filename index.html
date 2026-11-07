@@ -226,12 +226,9 @@ html[lang="en"] .mode-card.featured::after{content:'Recommended'}
       <a href="#" class="nav-logo"><img src="https://lichtom.github.io/objector-coder/icon.svg" width="25"> Objector</a>
       <div class="nav-links">
         <a href="#features" data-i18n="nav.features">功能特性</a>
-        <a href="#v1036" data-i18n="nav.v1036">v1.0.36 新特性</a>
+        <a href="#v1037" data-i18n="nav.v1037">v1.0.37 新特性</a>
         <a href="#modules" data-i18n="nav.modules">积木模块</a>
         <a href="#modes" data-i18n="nav.modes">编辑模式</a>
-        <a href="https://lichtom.github.io/objector-coder/blocks-guide/" data-i18n="nav.blocksGuide">📖 积木指南</a>
-        <a href="https://lichtom.github.io/objector-coder/extension-api" data-i18n="nav.extensionApi">📖 扩展API</a>
-        <a href="https://lichtom.github.io/ALB/docs.html" data-i18n="nav.albDocs">📖 ALB 文档</a>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:12px">
@@ -249,7 +246,7 @@ html[lang="en"] .mode-card.featured::after{content:'Recommended'}
   <div class="container">
     <div class="hero-badge">
       <span class="dot"></span>
-      <span data-i18n="hero.badge">v1.0.36 桌面版 · 开源免费</span>
+      <span data-i18n="hero.badge">v1.0.37 桌面版 · 开源免费</span>
     </div>
     <h1 data-i18n="hero.title">用积木搭建<br><span class="gradient">无限创意</span></h1>
     <p class="hero-sub" data-i18n="hero.sub">Objector 是一款强大的图形化积木编程编辑器，让零基础用户也能创作动画、游戏和交互式程序。从入门到专业开发，一站搞定。</p>
@@ -409,35 +406,35 @@ html[lang="en"] .mode-card.featured::after{content:'Recommended'}
   </div>
 </section>
 
-<!-- What's New in v1.0.36 -->
-<section id="v1036" style="background:linear-gradient(180deg,var(--bg2),var(--bg))">
+<!-- What's New in v1.0.37 -->
+<section id="v1037" style="background:linear-gradient(180deg,var(--bg2),var(--bg))">
   <div class="container">
     <div class="section-header reveal">
-      <div class="section-tag" data-i18n="v1036.tag">🆕 v1.0.36 新特性</div>
-      <h2 class="section-title" data-i18n="v1036.title">积木多语言 + 积木→代码翻译 + 按角色代码文件</h2>
-      <p class="section-desc" data-i18n="v1036.desc">所有积木内联英文标签随界面语言即时切换；任意积木可拖拽翻译为 Python / JavaScript / ALB；代码模式按角色独立保存文件，修复重载退回示例问题</p>
+      <div class="section-tag" data-i18n="v1037.tag">🆕 v1.0.37 新特性</div>
+      <h2 class="section-title" data-i18n="v1037.title">🗑️ 拖拽删除 + 🧲 智能吸附 + 🎯 精准点击</h2>
+      <p class="section-desc" data-i18n="v1037.desc">拖拽积木到右上角垃圾桶即可删除整条链；拖到连接点自动吸附拼接；积木重叠时优先点击最上层</p>
     </div>
     <div class="feature-grid">
 
       <div class="feature-card reveal">
-        <div class="feature-icon" style="background:rgba(108,92,231,.15)">🌐</div>
-        <h3 data-i18n="v1036.c1.title">积木多语言标签</h3>
-        <p data-i18n="v1036.c1.desc">347 个内置积木全部注册内联英文标签（labels），界面中英文一键切换不缺字；扩展积木同样支持 labels 声明与动态 getLabel 多语言。</p>
-        <span class="feature-tag" style="background:rgba(108,92,231,.15);color:var(--accent)" data-i18n="v1036.c1.tag">国际化</span>
+        <div class="feature-icon" style="background:rgba(253,121,168,.15)">🗑️</div>
+        <h3 data-i18n="v1037.c1.title">拖拽删除到垃圾桶</h3>
+        <p data-i18n="v1037.c1.desc">拖动任意积木时右上角出现垃圾桶图标，拖到桶上释放即删除该积木及其连接的所有子积木。悬停时桶放大变红给予视觉反馈。</p>
+        <span class="feature-tag" style="background:rgba(253,121,168,.15);color:var(--pink)" data-i18n="v1037.c1.tag">交互优化</span>
       </div>
 
       <div class="feature-card reveal">
-        <div class="feature-icon" style="background:rgba(166,227,161,.15)">🔁</div>
-        <h3 data-i18n="v1036.c2.title">积木→代码翻译引擎</h3>
-        <p data-i18n="v1036.c2.desc">任意积木拖入代码编辑器即时转为 Python / JavaScript / ALB：内联 code/codeFn、扩展 code_exp、内置映射与通用桥 run_block 五级解析链全覆盖。</p>
-        <span class="feature-tag" style="background:rgba(166,227,161,.15);color:#a6e3a1" data-i18n="v1036.c2.tag">翻译引擎</span>
+        <div class="feature-icon" style="background:rgba(108,92,231,.15)">🧲</div>
+        <h3 data-i18n="v1037.c2.title">积木智能吸附拼接</h3>
+        <p data-i18n="v1037.c2.desc">拖动普通积木靠近其它积木的 flow 连接点时自动拼接到链条中；拖动返回值积木（reporter/boolean）靠近参数插槽时自动填入并定位到右上方。</p>
+        <span class="feature-tag" style="background:rgba(108,92,231,.15);color:var(--accent2)" data-i18n="v1037.c2.tag">效率提升</span>
       </div>
 
       <div class="feature-card reveal">
-        <div class="feature-icon" style="background:rgba(249,226,175,.15)">💾</div>
-        <h3 data-i18n="v1036.c3.title">代码模式按角色保存</h3>
-        <p data-i18n="v1036.c3.desc">每个角色的代码独立保存为 code/&lt;角色&gt;.py|.js|.alb 文件，编辑自动落盘，修复重新打开项目代码退回示例的问题。</p>
-        <span class="feature-tag" style="background:rgba(249,226,175,.15);color:#f9e2af" data-i18n="v1036.c3.tag">保存修复</span>
+        <div class="feature-icon" style="background:rgba(0,210,211,.15)">🎯</div>
+        <h3 data-i18n="v1037.c3.title">精准 z-order 命中</h3>
+        <p data-i18n="v1037.c3.desc">积木重叠时按渲染顺序检测点击：独立 reporter/boolean（顶层）优先命中，链中子积木优先于父积木。彻底修复"点了上面却拖动下面"的问题。</p>
+        <span class="feature-tag" style="background:rgba(0,210,211,.15);color:var(--cyan)" data-i18n="v1037.c3.tag">点击修复</span>
       </div>
 
     </div>
@@ -606,7 +603,7 @@ html[lang="en"] .mode-card.featured::after{content:'Recommended'}
     <div class="download-card reveal" style="padding:40px;">
       <div style="text-align:center;margin-bottom:32px;">
         <h3 style="margin-bottom:8px;">Objector</h3>
-        <div class="version" data-i18n="download.version">版本 1.0.36 · 发布于 2026</div>
+        <div class="version" data-i18n="download.version">版本 1.0.37 · 发布于 2026</div>
         <p style="margin-top:8px;" data-i18n="download.desc">免费下载，无需注册。支持 Windows、Linux 和 macOS 平台。</p>
       </div>
 
@@ -618,17 +615,17 @@ html[lang="en"] .mode-card.featured::after{content:'Recommended'}
           <img src="WindowsIcon.png" alt="Windows" style="width:48px;height:48px;margin-bottom:16px;">
           <h4 style="color:var(--accent2);margin-bottom:4px;font-size:18px;">Windows</h4>
           <p style="font-size:12px;color:var(--text-muted);margin-bottom:20px;" data-i18n="download.winReq">Windows 10 及以上 · x64</p>
-          <a href="https://github.com/lichtom/Objector/releases/download/v1.0.36/Objector-Setup-1.0.36.exe" class="download-btn" style="width:100%;justify-content:center;background:linear-gradient(to bottom,#8b5cf6,#ab93e4);">
+          <a href="https://github.com/lichtom/Objector/releases/download/v1.0.37/Objector-Setup-1.0.37.exe" class="download-btn" style="width:100%;justify-content:center;background:linear-gradient(to bottom,#8b5cf6,#ab93e4);">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span data-i18n="download.installer">安装包 (.exe)</span>
           </a>
-          <a href="https://github.com/lichtom/Objector/releases/download/v1.0.36/Objector-1.0.36-win.zip" class="download-btn" style="width:100%;justify-content:center;margin-top:10px;font-size:14px;padding:10px 24px;background:linear-gradient(135deg,#2d3436,#636e72);">
+          <a href="https://github.com/lichtom/Objector/releases/download/v1.0.37/Objector-1.0.37-win.zip" class="download-btn" style="width:100%;justify-content:center;margin-top:10px;font-size:14px;padding:10px 24px;background:linear-gradient(135deg,#2d3436,#636e72);">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span data-i18n="download.zip">压缩包 (.zip)</span>
           </a>
           <p style="font-size:11px;color:var(--text-muted);margin-top:12px;">
-            🇨🇳 <a href="https://mirror.ghproxy.com/https://github.com/lichtom/Objector/releases/download/v1.0.36/Objector-Setup-1.0.36.exe" style="color:var(--accent2);">镜像加速下载</a> ·
-            <a href="https://mirror.ghproxy.com/https://github.com/lichtom/Objector/releases/download/v1.0.36/Objector-1.0.36-win.zip" style="color:var(--accent2);">ZIP 镜像</a>
+            🇨🇳 <a href="https://mirror.ghproxy.com/https://github.com/lichtom/Objector/releases/download/v1.0.37/Objector-Setup-1.0.37.exe" style="color:var(--accent2);">镜像加速下载</a> ·
+            <a href="https://mirror.ghproxy.com/https://github.com/lichtom/Objector/releases/download/v1.0.37/Objector-1.0.37-win.zip" style="color:var(--accent2);">ZIP 镜像</a>
           </p>
         </div>
 
@@ -637,13 +634,13 @@ html[lang="en"] .mode-card.featured::after{content:'Recommended'}
           <img src="LinuxIcon.png" alt="Linux" style="width:48px;height:48px;margin-bottom:16px;">
           <h4 style="color:var(--accent2);margin-bottom:4px;font-size:18px;">Linux</h4>
           <p style="font-size:12px;color:var(--text-muted);margin-bottom:20px;">Ubuntu / Fedora / Arch · x64</p>
-          <a href="https://github.com/lichtom/Objector/releases/download/v1.0.36/objector-1.0.36.tar.gz" class="download-btn" style="width:100%;justify-content:center;background:linear-gradient(to bottom,#fdcb6e,#e17055);">
+          <a href="https://github.com/lichtom/Objector/releases/download/v1.0.37/objector-1.0.37.tar.gz" class="download-btn" style="width:100%;justify-content:center;background:linear-gradient(to bottom,#fdcb6e,#e17055);">
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span data-i18n="download.linuxTar">压缩包 (.tar.gz)</span>
           </a>
           <p style="font-size:11px;color:var(--text-muted);margin-top:12px;">
             <span data-i18n="download.linuxReq">需要 libgtk-3 和 libnss3</span><br>
-            🇨🇳 <a href="https://mirror.ghproxy.com/https://github.com/lichtom/Objector/releases/download/v1.0.36/objector-1.0.36.tar.gz" style="color:var(--accent2);">镜像加速下载</a>
+            🇨🇳 <a href="https://mirror.ghproxy.com/https://github.com/lichtom/Objector/releases/download/v1.0.37/objector-1.0.37.tar.gz" style="color:var(--accent2);">镜像加速下载</a>
           </p>
         </div>
 
@@ -660,23 +657,18 @@ html[lang="en"] .mode-card.featured::after{content:'Recommended'}
             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span data-i18n="download.macZip">压缩包 (.zip)</span>
           </a>
-          <p style="font-size:11px;color:var(--text-muted);margin-top:12px;" data-i18n="download.macNote">macOS 当前最新版：v1.0.36</p>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:12px;" data-i18n="download.macNote">macOS 当前最新版：v1.0.37</p>
         </div>
 
       </div>
-      <a href="versions.html" style="color:var(--accent2)" data-i18n="download.versions">📜 历史版本下载</a>
 
-      <!-- 社区 -->
-      <div style="margin-bottom:20px;">
-        <a href="https://lichtom.github.io/objector-coder/community/" class="download-btn" style="justify-content:center;background:linear-gradient(135deg,var(--cyan),#00b894);">
-          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-          <span data-i18n="download.community">🌐 社区</span>
-        </a>
-      </div>
-
-      <div class="download-info" style="text-align:center;">
-        <a href="https://lichtom.github.io/objector-coder/blocks-guide/" style="color:var(--accent2)" data-i18n="download.guide">📖 积木用法指南</a>
-        <a href="https://lichtom.github.io/ALB/docs.html" style="color:var(--accent2);margin-left:16px" data-i18n="download.albGuide">📖 ALB 详细用法</a>
+      <!-- 辅助链接：紧凑胶囊按钮 -->
+      <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:24px;">
+        <a href="versions.html" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--text2);font-size:13px;font-weight:500;transition:all .2s;" data-i18n="download.versions">📜 历史版本</a>
+        <a href="https://lichtom.github.io/objector-coder/community/" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--text2);font-size:13px;font-weight:500;transition:all .2s;" data-i18n="download.community">🌐 社区</a>
+        <a href="https://lichtom.github.io/objector-coder/blocks-guide/" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--text2);font-size:13px;font-weight:500;transition:all .2s;" data-i18n="download.guide">📖 积木指南</a>
+        <a href="https://lichtom.github.io/objector-coder/extension-api" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--text2);font-size:13px;font-weight:500;transition:all .2s;" data-i18n="nav.extensionApi">📖 扩展 API</a>
+        <a href="https://lichtom.github.io/ALB/docs.html" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--text2);font-size:13px;font-weight:500;transition:all .2s;" data-i18n="download.albGuide">📖 ALB 文档</a>
       </div>
     </div>
   </div>
@@ -685,13 +677,7 @@ html[lang="en"] .mode-card.featured::after{content:'Recommended'}
 <!-- Footer -->
 <footer>
   <div class="container">
-    <div class="footer-links">
-      <a href="#features" id="ft-features">功能特性</a>
-      <a href="#modules" id="ft-modules">积木模块</a>
-      <a href="#modes" id="ft-modes">编辑模式</a>
-      <a href="#download" id="ft-download">下载</a>
-    </div>
-    <p id="ft-copyright">© 2026 Objector. 用积木搭建无限创意。</p>
+    <p id="ft-copyright" style="font-size:13px;color:var(--muted);">© 2026 Objector. 用积木搭建无限创意。</p>
   </div>
 </footer>
 
@@ -738,7 +724,7 @@ const i18n = {
     'nav.features': '功能特性', 'nav.modules': '积木模块',
     'nav.modes': '编辑模式', 'nav.blocksGuide': '📖 积木指南', 'nav.extensionApi': '📖 扩展API', 'nav.albDocs': '📖 ALB 文档',
     'nav.download': '立即下载',
-    'hero.badge': 'v1.0.36 桌面版 · 开源免费',
+    'hero.badge': 'v1.0.37 桌面版 · 开源免费',
     'hero.title': '用积木搭建<br><span class="gradient">无限创意</span>',
     'hero.sub': 'Objector 是一款强大的图形化积木编程编辑器，让零基础用户也能创作动画、游戏和交互式程序。从入门到专业开发，一站搞定。',
     'hero.download': '免费下载', 'hero.learnMore': '了解更多',
@@ -809,7 +795,7 @@ const i18n = {
     'tech.osVal': 'Windows 10+ / Linux x64 / macOS 11+',
     'tech.install': '安装方式', 'tech.installVal': '绿色免安装 / 安装包',
     'download.tag': '📥 立即下载', 'download.title': '开始你的创意之旅',
-    'nav.v1036': 'v1.0.36 新特性', 'v1036.tag': '🆕 v1.0.36 新特性', 'v1036.title': '积木多语言 + 积木→代码翻译 + 按角色代码文件', 'v1036.desc': '所有积木内联英文标签随界面语言即时切换；任意积木可拖拽翻译为 Python / JavaScript / ALB；代码模式按角色独立保存文件，修复重载退回示例问题', 'v1036.c1.title': '积木多语言标签', 'v1036.c1.desc': '347 个内置积木全部注册内联英文标签（labels），界面中英文一键切换不缺字；扩展积木同样支持 labels 声明与动态 getLabel 多语言。', 'v1036.c1.tag': '国际化', 'v1036.c2.title': '积木→代码翻译引擎', 'v1036.c2.desc': '任意积木拖入代码编辑器即时转为 Python / JavaScript / ALB：内联 code/codeFn、扩展 code_exp、内置映射与通用桥 run_block 五级解析链全覆盖。', 'v1036.c2.tag': '翻译引擎', 'v1036.c3.title': '代码模式按角色保存', 'v1036.c3.desc': '每个角色的代码独立保存为 code/<角色>.py|.js|.alb 文件，编辑自动落盘，修复重新打开项目代码退回示例的问题。', 'v1036.c3.tag': '保存修复', 'download.version': '版本 1.0.36 · 发布于 2026', 'download.macNote': 'macOS 当前最新版：v1.0.36',
+    'nav.v1037': 'v1.0.37 新特性', 'v1037.tag': '🆕 v1.0.37 新特性', 'v1037.title': '🗑️ 拖拽删除 + 🧲 智能吸附 + 🎯 精准点击', 'v1037.desc': '拖拽积木到右上角垃圾桶即可删除整条链；拖到连接点自动吸附拼接；积木重叠时优先点击最上层', 'v1037.c1.title': '拖拽删除到垃圾桶', 'v1037.c1.desc': '拖动任意积木时右上角出现垃圾桶图标，拖到桶上释放即删除该积木及其连接的所有子积木。悬停时桶放大变红给予视觉反馈。', 'v1037.c1.tag': '交互优化', 'v1037.c2.title': '积木智能吸附拼接', 'v1037.c2.desc': '拖动普通积木靠近其它积木的 flow 连接点时自动拼接到链条中；拖动返回值积木（reporter/boolean）靠近参数插槽时自动填入并定位到右上方。', 'v1037.c2.tag': '效率提升', 'v1037.c3.title': '精准 z-order 命中', 'v1037.c3.desc': '积木重叠时按渲染顺序检测点击：独立 reporter/boolean（顶层）优先命中，链中子积木优先于父积木。彻底修复"点了上面却拖动下面"的问题。', 'v1037.c3.tag': '点击修复', 'download.version': '版本 1.0.37 · 发布于 2026', 'download.macNote': 'macOS 当前最新版：v1.0.37',
     'download.desc': '免费下载，无需注册。支持 Windows、Linux 和 macOS 平台。',
     'download.winReq': 'Windows 10 及以上 · x64',
     'download.installer': '安装包 (.exe)', 'download.zip': '压缩包 (.zip)',
@@ -827,7 +813,7 @@ const i18n = {
     'nav.features': 'Features', 'nav.modules': 'Block Modules',
     'nav.modes': 'Edit Modes', 'nav.blocksGuide': '📖 Blocks Guide', 'nav.extensionApi': '📖 Extension API', 'nav.albDocs': '📖 ALB Docs',
     'nav.download': 'Download',
-    'hero.badge': 'v1.0.36 Desktop · Open Source & Free',
+    'hero.badge': 'v1.0.37 Desktop · Open Source & Free',
     'hero.title': 'Build with Blocks<br><span class="gradient">Unlimited Creativity</span>',
     'hero.sub': 'Objector is a powerful visual block programming editor that enables even beginners to create animations, games, and interactive programs. From beginner to professional development, all in one place.',
     'hero.download': 'Free Download', 'hero.learnMore': 'Learn More',
@@ -898,7 +884,7 @@ const i18n = {
     'tech.osVal': 'Windows 10+ / Linux x64 / macOS 11+',
     'tech.install': 'Installation', 'tech.installVal': 'Portable / Installer',
     'download.tag': '📥 Download Now', 'download.title': 'Start Your Creative Journey',
-    'nav.v1036': 'v1.0.36 What\'s New', 'v1036.tag': '🆕 v1.0.36 What\'s New', 'v1036.title': 'Multilingual Blocks + Block→Code Translation + Per-Sprite Code Files', 'v1036.desc': 'Every block carries an inline English label and switches with the UI language instantly; drag any block into the code editor to get Python / JavaScript / ALB; code mode now saves each sprite to its own file, fixing the revert-to-template bug', 'v1036.c1.title': 'Multilingual Block Labels', 'v1036.c1.desc': 'All 347 built-in blocks now register inline English labels — switch UI language without a single untranslated block; extension blocks can declare labels and dynamic getLabel in any language too.', 'v1036.c1.tag': 'i18n', 'v1036.c2.title': 'Block→Code Translation Engine', 'v1036.c2.desc': 'Drag any block into the code editor and it becomes Python / JavaScript / ALB via a five-level resolution chain: inline code/codeFn, extension code_exp, built-in maps and the universal run_block bridge.', 'v1036.c2.tag': 'Translation', 'v1036.c3.title': 'Per-Sprite Code Saving', 'v1036.c3.desc': 'Each sprite\'s code is saved independently as code/<sprite>.py|.js|.alb with debounced autosave, fixing code reverting to the template after reopening a project.', 'v1036.c3.tag': 'Save Fix', 'download.version': 'Version 1.0.36 · Released 2026', 'download.macNote': 'Latest macOS build: v1.0.36',
+    'nav.v1037': 'v1.0.37 What\'s New', 'v1037.tag': '🆕 v1.0.37 What\'s New', 'v1037.title': '🗑️ Drag-to-Delete + 🧲 Smart Snap + 🎯 Precise Click', 'v1037.desc': 'Drag blocks to the trash can to delete the whole chain; snap to connectors automatically; topmost block is always picked on overlap', 'v1037.c1.title': 'Drag-to-Trash Delete', 'v1037.c1.desc': 'A trash icon appears in the top-right corner when dragging any block. Drop onto it to delete the block and all connected children. The can enlarges and turns red on hover for visual feedback.', 'v1037.c1.tag': 'UX', 'v1037.c2.title': 'Smart Block Snap', 'v1037.c2.desc': 'Drag a normal block near another block\'s flow port to auto-connect it into the chain; drag a reporter/boolean block near a parameter slot to auto-fill and position it to the upper-right.', 'v1037.c2.tag': 'Efficiency', 'v1037.c3.title': 'Precise Z-Order Hit', 'v1037.c3.desc': 'Overlapping blocks are hit-tested in render order: independent reporter/boolean (topmost) first, child blocks in a chain before their parent. Completely fixes the "clicked top but dragged bottom" issue.', 'v1037.c3.tag': 'Click Fix', 'download.version': 'Version 1.0.37 · Released 2026', 'download.macNote': 'Latest macOS build: v1.0.37',
     'download.desc': 'Free download, no registration required. Supports Windows, Linux, and macOS.',
     'download.winReq': 'Windows 10 and above · x64',
     'download.installer': 'Installer (.exe)', 'download.zip': 'Archive (.zip)',

@@ -361,27 +361,80 @@ const EditorCanvas = (function () {
   }
 
   function findBlockAt(wx, wy) {
-    const ids = Object.keys(EditorState.blocks).reverse();
-    for (const id of ids) {
-      const b = EditorState.blocks[id];
-      const def = BlockRegistry.getBlock(b.type);
-      const sz = BlockRenderer.measureBlock(b);
+    // 匹配渲染 z-order: 最后绘制的在最上层，优先命中
+    // 渲染顺序: 1) 链积木(flow chains + sub-blocks)  2) 独立 reporter/boolean(顶层)
+    // 因此命中检测: 先查 reporter/boolean(反转序)，再查链积木(反转序，子积木优先于父积木)
 
-      // 基本包围盒检查
-      if (wx < b.x || wx > b.x + sz.w || wy < b.y || wy > b.y + sz.h) continue;
-
+    function _hitTest(blk) {
+      if (!blk) return false;
+      const def = BlockRegistry.getBlock(blk.type);
+      const sz = BlockRenderer.measureBlock(blk);
+      if (wx < blk.x || wx > blk.x + sz.w || wy < blk.y || wy > blk.y + sz.h) return false;
       // C 型积木：排除 C 口区域（子代码应在子积木上命中）
-      if (def && def.shape === 'c-block') {
+      if (def && (def.shape === 'c-block' || def.shape === 'c-block-reporter')) {
         const topOff = def.shape === 'hat' ? BlockRenderer.HAT_HEIGHT : 0;
-        const mouthTop = b.y + topOff + BlockRenderer.BLOCK_HEIGHT;
-        const mouthBottom = mouthTop + BlockRenderer.C_MOUTH_HEIGHT * (def.subBlocks || ['body']).length;
-        if (wy >= mouthTop && wy <= mouthBottom && wx > b.x + 30) {
-          continue; // 跳过 C 口内部，让子积木先被检测
+        const subNames = def.subBlocks || ['body'];
+        const mouthTop = blk.y + topOff + BlockRenderer.BLOCK_HEIGHT;
+        const mouthBottom = mouthTop + BlockRenderer.C_MOUTH_HEIGHT * subNames.length;
+        if (wy >= mouthTop && wy <= mouthBottom && wx > blk.x + 30) {
+          return false;
         }
       }
-
-      return b;
+      return true;
     }
+
+    const allBlocks = Object.values(EditorState.blocks);
+
+    // 1) 最后绘制的独立 reporter/boolean 积木（顶层）
+    for (let i = allBlocks.length - 1; i >= 0; i--) {
+      const b = allBlocks[i];
+      if (b.flowIn || isSubBlock(b.id)) continue;
+      const def = BlockRegistry.getBlock(b.type);
+      if (!def || (def.shape !== 'reporter' && def.shape !== 'boolean')) continue;
+      if (_hitTest(b)) return b;
+    }
+
+    // 2) 链积木（反序），子积木在父积木之上
+    const chainHeads = [];
+    allBlocks.forEach(b => {
+      if (!b.flowIn && !isSubBlock(b.id)) {
+        const def = BlockRegistry.getBlock(b.type);
+        if (def && def.shape !== 'reporter' && def.shape !== 'boolean') {
+          chainHeads.push(b);
+        }
+      }
+    });
+
+    function _checkChainRecursive(blk) {
+      if (!blk) return null;
+      // 先检查子积木（后绘制，在上方）
+      if (blk.subBlocks) {
+        const subIds = Object.values(blk.subBlocks);
+        for (let i = subIds.length - 1; i >= 0; i--) {
+          const sub = EditorState.blocks[subIds[i]];
+          if (sub) {
+            const hit = _checkChainRecursive(sub);
+            if (hit) return hit;
+          }
+        }
+      }
+      if (_hitTest(blk)) return blk;
+      // 检查 flowOut 后续（后绘制，在上方）
+      if (blk.flowOut) {
+        const next = EditorState.blocks[blk.flowOut];
+        if (next) {
+          const hit = _checkChainRecursive(next);
+          if (hit) return hit;
+        }
+      }
+      return null;
+    }
+
+    for (let i = chainHeads.length - 1; i >= 0; i--) {
+      const hit = _checkChainRecursive(chainHeads[i]);
+      if (hit) return hit;
+    }
+
     return null;
   }
 
@@ -397,6 +450,101 @@ const EditorCanvas = (function () {
       }
     }
     return null;
+  }
+
+  /** 在非拖拽链的积木中查找最近的端口 */
+  function _findPortNear(wx, wy, excludeIds) {
+    const hitR = BlockRenderer.PORT_HIT * 1.8; // 更大的吸附感应范围
+    let best = null, bestDist = hitR * hitR;
+    for (const b of Object.values(EditorState.blocks)) {
+      if (excludeIds.includes(b.id)) continue;
+      const sz = BlockRenderer.measureBlock(b);
+      const ports = BlockRenderer.getPorts(b, sz);
+      for (const port of ports) {
+        const dx = wx - (b.x + port.x), dy = wy - (b.y + port.y);
+        const d2 = dx * dx + dy * dy;
+        if (d2 < bestDist) {
+          bestDist = d2;
+          best = { blockId: b.id, ...port };
+        }
+      }
+    }
+    return best;
+  }
+
+  /**
+   * 拖拽释放时尝试吸附到附近端口
+   * - 普通积木（flow 类型）→ 拼接到 flow 连接点
+   * - 返回值积木（reporter/boolean）→ 拼接到参数连接点右上方
+   */
+  function _trySnapToPort(wx, wy, chainIds) {
+    const headId = chainIds[0];
+    const head = EditorState.blocks[headId];
+    if (!head) return false;
+
+    const targetPort = _findPortNear(wx, wy, chainIds);
+    if (!targetPort) return false;
+
+    const headDef = BlockRegistry.getBlock(head.type);
+    const isReporter = headDef && (headDef.shape === 'reporter' || headDef.shape === 'boolean');
+
+    if (isReporter) {
+      // ===== 返回值积木 → 连接到参数端口（param-in） =====
+      if (targetPort.type === 'param-in') {
+        ConnectionManager.connect(headId, 'value', targetPort.blockId, targetPort.name);
+        // 定位到目标积木右上方
+        const targetBlock = EditorState.blocks[targetPort.blockId];
+        if (targetBlock) {
+          const targetSz = BlockRenderer.measureBlock(targetBlock);
+          head.x = targetBlock.x + targetSz.w * 0.55;
+          head.y = targetBlock.y - 10;
+        }
+        render();
+        return true;
+      }
+      // 返回值积木靠近 flow 端口 → 也尝试作为参数连接
+      if (targetPort.type === 'flow-in' || targetPort.type === 'flow-out') {
+        const targetBlock = EditorState.blocks[targetPort.blockId];
+        if (targetBlock) {
+          // 找目标积木的第一个可用参数端口
+          const targetSz = BlockRenderer.measureBlock(targetBlock);
+          const targetPorts = BlockRenderer.getPorts(targetBlock, targetSz);
+          const paramPort = targetPorts.find(p => p.type === 'param-in');
+          if (paramPort) {
+            ConnectionManager.connect(headId, 'value', targetPort.blockId, paramPort.name);
+            head.x = targetBlock.x + targetSz.w * 0.55;
+            head.y = targetBlock.y - 10;
+            render();
+            return true;
+          }
+        }
+      }
+    } else {
+      // ===== 普通积木 → 连接到 flow 端口 =====
+      if (targetPort.type === 'flow-in' || targetPort.type === 'flow-out') {
+        // 找拖拽链尾部的 flowOut 积木
+        let tailId = headId;
+        let cur = head.flowOut;
+        while (cur && chainIds.includes(cur)) {
+          tailId = cur;
+          const cb = EditorState.blocks[cur];
+          cur = cb ? cb.flowOut : null;
+        }
+        const tail = EditorState.blocks[tailId];
+        if (!tail) return false;
+
+        // 检查是否能做 flow 连接
+        if (targetPort.type === 'flow-in' && !headDef.ports.flowOut) return false;
+        if (targetPort.type === 'flow-out' && !headDef.ports.flowIn) return false;
+
+        const fromPortName = (targetPort.type === 'flow-in') ? 'flowOut' : 'flowIn';
+        ConnectionManager.connect(tailId, fromPortName, targetPort.blockId, targetPort.name);
+        render();
+        return true;
+      }
+      // 普通积木靠近参数端口 → 不处理（普通积木不能插入参数槽）
+    }
+    return false;
   }
 
   function onMouseDown(e) {
@@ -517,6 +665,9 @@ const EditorCanvas = (function () {
         blockId: block.id, offX: w.x - block.x, offY: w.y - block.y,
         chainIds, startWx: w.x, startWy: w.y, positions,
       };
+      // 拖拽期间绑定到 document，防止被垃圾桶等高 z-index 元素拦截事件
+      document.addEventListener('mousemove', onMouseMove, true);
+      document.addEventListener('mouseup', onMouseUp, true);
     } else {
       // 点击空白区域 → 清除多选 + 拖拽画布
       selectedBlock = null;
@@ -553,14 +704,32 @@ const EditorCanvas = (function () {
         const orig = dragging.positions[id];
         if (b && orig) { b.x = orig.x + dx; b.y = orig.y + dy; }
       });
+      // 检查是否在垃圾桶上方（显示删除提示）
+      const trashEl = document.getElementById('canvas-trash');
+      if (trashEl) {
+        const trect = trashEl.getBoundingClientRect();
+        const inTrash = trect.width > 0 && trect.height > 0 &&
+            e.clientX >= trect.left && e.clientX <= trect.right &&
+            e.clientY >= trect.top && e.clientY <= trect.bottom;
+        trashEl.classList.toggle('trash-visible', true);
+        trashEl.classList.toggle('trash-hover', inTrash);
+      }
       return;
     }
 
     hoveredPort = findPortAt(w.x, w.y);
     document.getElementById('status-pos').textContent = `X: ${Math.round(w.x)}  Y: ${Math.round(w.y)}`;
+    // 非拖拽状态隐藏垃圾桶
+    const trashEl = document.getElementById('canvas-trash');
+    if (trashEl) trashEl.classList.remove('trash-visible', 'trash-hover');
   }
 
   function onMouseUp(e) {
+    // 拖拽结束时解绑 document 级监听
+    if (dragging || panning || dragLine) {
+      document.removeEventListener('mousemove', onMouseMove, true);
+      document.removeEventListener('mouseup', onMouseUp, true);
+    }
     if (panning) {
       panning = false;
       canvas.style.cursor = spaceDown ? 'grab' : 'default';
@@ -580,6 +749,31 @@ const EditorCanvas = (function () {
     }
 
     if (dragging) {
+      // 检查是否拖到垃圾桶上方，如果是则删除积木链
+      const trashEl = document.getElementById('canvas-trash');
+      if (trashEl) {
+        trashEl.classList.remove('trash-visible', 'trash-hover');
+        const trect = trashEl.getBoundingClientRect();
+        if (trect.width > 0 && trect.height > 0 &&
+            e.clientX >= trect.left && e.clientX <= trect.right &&
+            e.clientY >= trect.top && e.clientY <= trect.bottom) {
+          // 直接删除拖拽链中的所有积木
+          dragging.chainIds.forEach(id => {
+            delete EditorState.blocks[id];
+          });
+          updateBlockCount();
+          dragging = null;
+          render();
+          return;
+        }
+      }
+      // 尝试吸附到附近的连接点（普通积木拼接到 flow 端口，返回值积木拼接到参数端口）
+      const canvasRect = canvas.getBoundingClientRect();
+      const dropWorld = screenToWorld(e.clientX - canvasRect.left, e.clientY - canvasRect.top);
+      if (_trySnapToPort(dropWorld.x, dropWorld.y, dragging.chainIds)) {
+        dragging = null;
+        return;
+      }
       dragging = null;
     }
   }
